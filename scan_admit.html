@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admission Confirmation (Scan)</title>
     <link rel="icon" type="image/x-icon" href="https://dilnuka13.github.io/AL/favicon.ico">
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         
@@ -68,7 +66,7 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Status message styles */
+        /* Status message styles - NO LONGER USED FOR MAIN STATUS, but keeping classes */
         .status-success {
             background: rgba(16, 185, 129, 0.2);
             color: #10b981;
@@ -84,16 +82,28 @@
             color: #f59e0b;
             border: 1px solid rgba(245, 158, 11, 0.3);
         }
+
+        /* Modal specific styles */
+        .modal-success {
+            background: #059669; /* Darker teal for modal body */
+            color: #d1fae5;
+        }
+        .modal-error {
+            background: #dc2626; /* Dark red for modal body */
+            color: #fee2e2;
+        }
+        .modal-warning {
+            background: #d97706; /* Dark orange for warning */
+            color: #fffbeb;
+        }
     </style>
 
-    <!-- Supabase, QR Scanner CDNs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="p-4 md:p-10">
 
     <div class="max-w-4xl mx-auto">
-        <!-- Header -->
         <header class="mb-8 p-6 rounded-lg glass-card flex justify-between items-center">
             <div>
                 <h1 class="text-3xl font-bold text-white">Record Admission</h1>
@@ -107,20 +117,18 @@
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- QR Scanning Section -->
             <div class="glass-card p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-white text-center">Scan QR Code</h2>
                 <div id="reader" class="w-full max-w-sm mx-auto rounded-lg overflow-hidden mb-4"></div>
                 <p class="text-center text-gray-300 text-sm">Point your device camera here</p>
                 
                 <div class="text-center mt-6">
-                    <button onclick="refreshScanner()" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-xl">
+                    <button onclick="stopScanner()" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-xl">
                         Restart
                     </button>
                 </div>
             </div>
 
-            <!-- Manual Entry Section -->
             <div class="glass-card p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-white text-center">Enter Index Number</h2>
                 
@@ -140,7 +148,6 @@
             </div>
         </main>
 
-        <!-- Instructions Section -->
         <div class="glass-card p-6 mt-8">
             <h3 class="text-xl font-semibold mb-4 text-white text-center">Instructions</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
@@ -166,6 +173,15 @@
         </div>
     </div>
 
+    <div id="status-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
+        <div id="modal-content" class="glass-card p-6 w-full max-w-sm text-center transform transition-all scale-100 duration-300">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-white"></h3>
+            <p id="modal-message" class="text-lg mb-6"></p>
+            <button onclick="closeModal()" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                OK / Scan Next
+            </button>
+        </div>
+    </div>
     <script>
         // --- Supabase Config and Initialization ---
         const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co';
@@ -174,44 +190,71 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let html5QrCode = null;
+        let isProcessing = false; // Flag to prevent multiple concurrent processing
 
         // --- Utility Functions ---
 
-        // Show admission status message
-        function showAdmitStatus(message, type = 'success') {
-            const statusEl = document.getElementById('admit-status-message');
-            statusEl.textContent = message;
-            statusEl.className = `mt-6 p-4 rounded-lg font-semibold text-center`;
-            statusEl.classList.remove('hidden', 'status-success', 'status-error', 'status-info');
-            
+        // Show admission status pop-up (replaces the old showAdmitStatus)
+        function showModal(title, message, type = 'success') {
+            const modal = document.getElementById('status-modal');
+            const content = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+
+            // Reset classes
+            content.classList.remove('modal-success', 'modal-error', 'modal-warning');
+            content.classList.add('glass-card'); // Keep glass-card style
+
+            // Set content and specific class
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
             if (type === 'success') {
-                statusEl.classList.add('status-success');
+                content.classList.add('modal-success');
+                messageEl.classList.add('text-green-100');
+                messageEl.classList.remove('text-red-100', 'text-yellow-100');
             } else if (type === 'error') {
-                statusEl.classList.add('status-error');
-            } else { // info/loading
-                statusEl.classList.add('status-info');
+                content.classList.add('modal-error');
+                messageEl.classList.add('text-red-100');
+                messageEl.classList.remove('text-green-100', 'text-yellow-100');
+            } else { // warning/info
+                content.classList.add('modal-warning');
+                messageEl.classList.add('text-yellow-100');
+                messageEl.classList.remove('text-green-100', 'text-red-100');
             }
-            statusEl.classList.remove('hidden');
-            setTimeout(() => statusEl.classList.add('hidden'), 5000);
+
+            modal.classList.remove('hidden');
         }
 
-        // Restart scanner and page
-        function refreshScanner() {
-            // Stop the scanner
-            if (html5QrCode && html5QrCode.getState() !== 0) {
-                html5QrCode.stop().catch(err => console.error("Could not stop scanner on refresh:", err));
-            }
-            
-            // Clear status message
-            document.getElementById('admit-status-message').classList.add('hidden');
-            
+        // Close the custom modal
+        function closeModal() {
+            document.getElementById('status-modal').classList.add('hidden');
+            // Clear manual input only after a successful process is completed
+            document.getElementById('admit-index-input').value = '';
+            isProcessing = false; // Allow new processing
+        }
+
+        // Stop/Restart scanner and page (Renamed from refreshScanner to stopScanner for clarity)
+        function stopScanner() {
             // Clear manual input
             document.getElementById('admit-index-input').value = '';
+            closeModal(); // Ensure modal is closed
 
-            // Restart scanner
-            setTimeout(initScanner, 100); 
-            
-            showAdmitStatus('System restarted.', 'info');
+            // Stop the scanner
+            if (html5QrCode && html5QrCode.getState() !== 0) {
+                html5QrCode.stop().then(() => {
+                    // Restart scanner
+                    initScanner();
+                    showModal('Restarted', 'System is ready for a new scan.', 'info');
+                }).catch(err => {
+                    console.error("Could not stop scanner on refresh:", err);
+                    // Even if stop fails, try to restart
+                    initScanner();
+                });
+            } else {
+                initScanner();
+                showModal('Restarted', 'System is ready for a new scan.', 'info');
+            }
         }
 
         // Initialize QR Scanner
@@ -219,9 +262,12 @@
             const qrCodeRegionId = "reader";
             
             if (html5QrCode && html5QrCode.getState() !== 0) {
-                // Stop the scanner if it's already running
+                // Stop the scanner if it's already running (in case stopScanner failed)
                 html5QrCode.stop().catch(err => console.error("Could not stop previous scanner:", err));
             }
+            
+            // Clear previous error message in reader div
+            document.getElementById(qrCodeRegionId).innerHTML = '';
 
             html5QrCode = new Html5Qrcode(qrCodeRegionId);
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
@@ -231,22 +277,24 @@
                 config,
                 (decodedText, decodedResult) => {
                     // When QR code is successfully scanned
-                    html5QrCode.stop(); // Stop the scanner
-                    processAdmission(decodedText);
-                    // Restarting scanner after success (to scan another person)
-                    setTimeout(initScanner, 3000); 
+                    if (!isProcessing) {
+                        isProcessing = true;
+                        html5QrCode.stop(); // Stop the scanner temporarily
+                        processAdmission(decodedText);
+                        // Scanner will restart after the modal is closed via closeModal()
+                        // OR after a short delay in case of success, if we want auto-restart. 
+                        // For now, let's keep it simple: restart when the user closes the modal.
+                    }
                 },
                 (errorMessage) => {
-                    // Scanning errors
+                    // Scanning errors are generally ignored to keep the flow smooth
                 }
             ).catch((err) => {
                 console.error("Camera access error:", err);
                 let errorMessage = "Could not start camera. (HTTPS may be required)";
                 
-                // Securely retrieve the error message
                 const errMsg = err && err.message ? err.message : '';
 
-                // Show specific message for NotAllowedError
                 if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
                     errorMessage = "Permission to access camera is denied. Please check your browser's Camera Permissions and try again.";
                 }
@@ -258,7 +306,14 @@
         // Admission confirmation process by index number
         async function processAdmission(indexNumber) {
             indexNumber = indexNumber.trim();
-            showAdmitStatus('Checking confirmation...', 'info');
+
+            if (isProcessing) return; // Prevent double submission
+            isProcessing = true;
+
+            showModal('Processing...', `Checking details for Index: ${indexNumber}...`, 'info');
+            
+            // Re-initiate scanner after a short delay in case of manual entry failure
+            const restartScannerDelay = setTimeout(initScanner, 3000); 
 
             // 1. Retrieving information
             const { data: currentData, error: readError } = await supabaseClient
@@ -267,19 +322,29 @@
                 .eq('index_number', indexNumber)
                 .single();
 
+            // Clear the potential scanner restart timeout
+            clearTimeout(restartScannerDelay);
+            
             if (readError || !currentData) {
-                showAdmitStatus(`Index Number (${indexNumber}) is invalid!`, 'error');
+                showModal('Invalid Index', `Index Number **${indexNumber}** not found in the system.`, 'error');
+                isProcessing = false;
+                initScanner(); // Restart scanner immediately on error
                 return;
             }
 
+            // Check if already admitted (Warning case)
             if (currentData.is_admitted) {
-                showAdmitStatus(`${currentData.full_name} is already admitted.`, 'error');
+                showModal('Already Admitted (Warning)', `**${currentData.full_name}** has already been admitted.`, 'warning');
+                isProcessing = false;
+                initScanner(); // Restart scanner immediately
                 return;
             }
 
-            // Checking expiry date
+            // Checking expiry date (Error case)
             if (new Date(currentData.expiry_date) < new Date()) {
-                showAdmitStatus(`Card has expired (${currentData.expiry_date})!`, 'error');
+                showModal('Card Expired (Error)', `Card for **${currentData.full_name}** has expired on ${currentData.expiry_date}.`, 'error');
+                isProcessing = false;
+                initScanner(); // Restart scanner immediately
                 return;
             }
 
@@ -290,21 +355,22 @@
                 .eq('id', currentData.id);
 
             if (updateError) {
-                showAdmitStatus(`Failed to record admission: ${updateError.message}`, 'error');
+                showModal('Admission Failed (Error)', `Failed to record admission for **${currentData.full_name}**: ${updateError.message}`, 'error');
             } else {
-                showAdmitStatus(`${currentData.full_name} successfully admitted! (${indexNumber})`, 'success');
-                // After success, clearing the admission number
-                document.getElementById('admit-index-input').value = '';
+                showModal('Admission Successful!', `Admission recorded for **${currentData.full_name}** (Index: ${indexNumber}).`, 'success');
             }
+            // isProcessing is cleared by closeModal()
+            initScanner(); // Restart scanner after the successful transaction (to be ready for the next person)
         }
         
         // Manual input button event
         document.getElementById('admit-check-btn').addEventListener('click', () => {
+            if (isProcessing) return;
             const indexNumber = document.getElementById('admit-index-input').value.trim();
             if (indexNumber) {
                 processAdmission(indexNumber);
             } else {
-                showAdmitStatus('Please enter an Index Number.', 'error');
+                showModal('Input Required', 'Please enter an Index Number.', 'error');
             }
         });
 

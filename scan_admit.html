@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ඇතුළත් වීම තහවුරු කිරීම (Scan)</title>
+    <title>Admission Confirmation (Scan)</title>
+    <link rel="icon" type="image/x-icon" href="https://dilnuka13.github.io/AL/favicon.ico">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
@@ -95,43 +96,43 @@
         <!-- Header -->
         <header class="mb-8 p-6 rounded-lg glass-card flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-white">ඇතුළත් වීම සටහන් කිරීම</h1>
-                <p class="text-gray-300 mt-2">QR කේතය ස්කෑන් කරන්න හෝ දර්ශක අංකය ඇතුළත් කරන්න</p>
+                <h1 class="text-3xl font-bold text-white">Record Admission</h1>
+                <p class="text-gray-300 mt-2">Scan QR Code or Enter Index Number</p>
             </div>
             <nav>
                 <a href="index.html" class="btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg">
-                    පාලක පුවරුව
+                    Dashboard
                 </a>
             </nav>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- QR ස්කෑන් කිරීමේ කොටස -->
+            <!-- QR Scanning Section -->
             <div class="glass-card p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-white text-center">QR කේතය ස්කෑන් කරන්න</h2>
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Scan QR Code</h2>
                 <div id="reader" class="w-full max-w-sm mx-auto rounded-lg overflow-hidden mb-4"></div>
-                <p class="text-center text-gray-300 text-sm">ඔබේ උපාංගයේ කැමරාව මෙහි පෙන්වන්න</p>
+                <p class="text-center text-gray-300 text-sm">Point your device camera here</p>
                 
                 <div class="text-center mt-6">
                     <button onclick="refreshScanner()" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-xl">
-                        නැවත අරඹන්න
+                        Restart
                     </button>
                 </div>
             </div>
 
-            <!-- අතින් ඇතුළත් කිරීමේ කොටස -->
+            <!-- Manual Entry Section -->
             <div class="glass-card p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-white text-center">දර්ශක අංකය ඇතුළත් කරන්න</h2>
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Enter Index Number</h2>
                 
                 <div class="space-y-4">
                     <div>
-                        <label for="admit-index-input" class="block text-sm font-medium text-gray-300 mb-2">දර්ශක අංකය</label>
+                        <label for="admit-index-input" class="block text-sm font-medium text-gray-300 mb-2">Index Number</label>
                         <input type="text" id="admit-index-input" placeholder="ENT-XXXXXX" 
                                class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
                     </div>
                     
                     <button id="admit-check-btn" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-xl transition duration-300">
-                        ඇතුළත් වීම තහවුරු කරන්න
+                        Confirm Admission
                     </button>
                 </div>
 
@@ -141,25 +142,25 @@
 
         <!-- Instructions Section -->
         <div class="glass-card p-6 mt-8">
-            <h3 class="text-xl font-semibold mb-4 text-white text-center">උපදෙස්</h3>
+            <h3 class="text-xl font-semibold mb-4 text-white text-center">Instructions</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div class="p-4">
                     <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                         <span class="text-white font-bold">1</span>
                     </div>
-                    <p class="text-gray-300">QR කේතය ස්කෑන් කරන්න හෝ දර්ශක අංකය ඇතුළත් කරන්න</p>
+                    <p class="text-gray-300">Scan QR Code or enter Index Number</p>
                 </div>
                 <div class="p-4">
                     <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                         <span class="text-white font-bold">2</span>
                     </div>
-                    <p class="text-gray-300">තොරතුරු ස්වයංක්‍රීයව පරීක්ෂා වේ</p>
+                    <p class="text-gray-300">Information is checked automatically</p>
                 </div>
                 <div class="p-4">
                     <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                         <span class="text-white font-bold">3</span>
                     </div>
-                    <p class="text-gray-300">ඇතුළත් වීම සාර්ථකව සටහන් වේ</p>
+                    <p class="text-gray-300">Admission is successfully recorded</p>
                 </div>
             </div>
         </div>
@@ -176,7 +177,7 @@
 
         // --- Utility Functions ---
 
-        // දත්ත ඇතුළු කිරීමේ තත්ත්ව පණිවිඩය පෙන්වීම
+        // Show admission status message
         function showAdmitStatus(message, type = 'success') {
             const statusEl = document.getElementById('admit-status-message');
             statusEl.textContent = message;
@@ -194,31 +195,31 @@
             setTimeout(() => statusEl.classList.add('hidden'), 5000);
         }
 
-        // ස්කෑනරය සහ පිටුව නැවත අරඹන්න
+        // Restart scanner and page
         function refreshScanner() {
-            // 1. Scanner නවත්වන්න (Stop the scanner)
+            // Stop the scanner
             if (html5QrCode && html5QrCode.getState() !== 0) {
                 html5QrCode.stop().catch(err => console.error("Could not stop scanner on refresh:", err));
             }
             
-            // 2. තත්ත්ව පණිවිඩය ඉවත් කරන්න (Clear status message)
+            // Clear status message
             document.getElementById('admit-status-message').classList.add('hidden');
             
-            // 3. අතින් ඇතුළත් කිරීම ඉවත් කරන්න (Clear manual input)
+            // Clear manual input
             document.getElementById('admit-index-input').value = '';
 
-            // 4. ස්කෑනරය නැවත ආරම්භ කරන්න (Restart scanner)
+            // Restart scanner
             setTimeout(initScanner, 100); 
             
-            showAdmitStatus('පද්ධතිය නැවත ආරම්භ කරන ලදී.', 'info');
+            showAdmitStatus('System restarted.', 'info');
         }
 
-        // QR ස්කෑනරය ආරම්භ කිරීම
+        // Initialize QR Scanner
         function initScanner() {
             const qrCodeRegionId = "reader";
             
             if (html5QrCode && html5QrCode.getState() !== 0) {
-                // ස්කෑනරය දැනටමත් ක්‍රියාත්මක නම් නවත්වන්න
+                // Stop the scanner if it's already running
                 html5QrCode.stop().catch(err => console.error("Could not stop previous scanner:", err));
             }
 
@@ -226,40 +227,40 @@
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
             html5QrCode.start(
-                { facingMode: "environment" }, // පසුපස කැමරාව භාවිත කරන්න
+                { facingMode: "environment" }, // Use back camera
                 config,
                 (decodedText, decodedResult) => {
-                    // QR කේතය සාර්ථකව ස්කෑන් කළ විට
-                    html5QrCode.stop(); // ස්කෑනරය නවත්වන්න
+                    // When QR code is successfully scanned
+                    html5QrCode.stop(); // Stop the scanner
                     processAdmission(decodedText);
-                    // සාර්ථක වූ පසු ස්කෑනරය නැවත ආරම්භ කිරීම (තවත් කෙනෙකුට ස්කෑන් කිරීමට)
+                    // Restarting scanner after success (to scan another person)
                     setTimeout(initScanner, 3000); 
                 },
                 (errorMessage) => {
-                    // ස්කෑන් කිරීමේ දෝෂ
+                    // Scanning errors
                 }
             ).catch((err) => {
-                console.error("කැමරාවට ප්‍රවේශ වීමේ දෝෂය:", err);
-                let errorMessage = "කැමරාව ආරම්භ කළ නොහැක. (HTTPS අවශ්‍ය විය හැක)";
+                console.error("Camera access error:", err);
+                let errorMessage = "Could not start camera. (HTTPS may be required)";
                 
-                // දෝෂ පණිවිඩය ආරක්ෂිතව ලබා ගැනීම
+                // Securely retrieve the error message
                 const errMsg = err && err.message ? err.message : '';
 
-                // NotAllowedError සඳහා නිශ්චිත පණිවිඩය පෙන්වන්න
+                // Show specific message for NotAllowedError
                 if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
-                    errorMessage = "කැමරාවට ප්‍රවේශ වීමට අවසර නැත. කරුණාකර ඔබගේ බ්‍රවුසරයේ කැමරා අවසරයන් (Camera Permissions) පරීක්ෂා කර නැවත උත්සාහ කරන්න.";
+                    errorMessage = "Permission to access camera is denied. Please check your browser's Camera Permissions and try again.";
                 }
 
                 document.getElementById(qrCodeRegionId).innerHTML = `<p class="p-4 text-center text-red-400">${errorMessage}</p>`;
             });
         }
 
-        // දර්ශක අංකය මගින් ඇතුළත් කිරීම තහවුරු කිරීමේ ක්‍රියාවලිය
+        // Admission confirmation process by index number
         async function processAdmission(indexNumber) {
             indexNumber = indexNumber.trim();
-            showAdmitStatus('තහවුරු කිරීම පරීක්ෂා කරමින්...', 'info');
+            showAdmitStatus('Checking confirmation...', 'info');
 
-            // 1. තොරතුරු ලබා ගැනීම
+            // 1. Retrieving information
             const { data: currentData, error: readError } = await supabaseClient
                 .from('admission_cards')
                 .select('id, full_name, is_admitted, expiry_date')
@@ -267,32 +268,32 @@
                 .single();
 
             if (readError || !currentData) {
-                showAdmitStatus(`දර්ශක අංකය (${indexNumber}) වලංගු නොවේ!`, 'error');
+                showAdmitStatus(`Index Number (${indexNumber}) is invalid!`, 'error');
                 return;
             }
 
             if (currentData.is_admitted) {
-                showAdmitStatus(`${currentData.full_name} දැනටමත් ඇතුළත් කර ඇත.`, 'error');
+                showAdmitStatus(`${currentData.full_name} is already admitted.`, 'error');
                 return;
             }
 
-            // කල් ඉකුත් වීමේ දිනය පරීක්ෂා කිරීම
+            // Checking expiry date
             if (new Date(currentData.expiry_date) < new Date()) {
-                showAdmitStatus(`කාඩ්පත කල් ඉකුත් වී ඇත (${currentData.expiry_date})!`, 'error');
+                showAdmitStatus(`Card has expired (${currentData.expiry_date})!`, 'error');
                 return;
             }
 
-            // 2. ඇතුළත් කිරීමේ තත්ත්වය යාවත්කාලීන කිරීම
+            // 2. Updating admission status
             const { error: updateError } = await supabaseClient
                 .from('admission_cards')
                 .update({ is_admitted: true, admitted_at: new Date().toISOString() })
                 .eq('id', currentData.id);
 
             if (updateError) {
-                showAdmitStatus(`ඇතුළත් කිරීම සටහන් කිරීම අසාර්ථක විය: ${updateError.message}`, 'error');
+                showAdmitStatus(`Failed to record admission: ${updateError.message}`, 'error');
             } else {
-                showAdmitStatus(`${currentData.full_name} සාර්ථකව ඇතුළත් කරන ලදී! (${indexNumber})`, 'success');
-                // සාර්ථක වූ පසු, ඇතුළත් කිරීමේ අංකය ඉවත් කිරීම
+                showAdmitStatus(`${currentData.full_name} successfully admitted! (${indexNumber})`, 'success');
+                // After success, clearing the admission number
                 document.getElementById('admit-index-input').value = '';
             }
         }
@@ -303,7 +304,7 @@
             if (indexNumber) {
                 processAdmission(indexNumber);
             } else {
-                showAdmitStatus('කරුණාකර දර්ශක අංකයක් ඇතුළත් කරන්න.', 'error');
+                showAdmitStatus('Please enter an Index Number.', 'error');
             }
         });
 

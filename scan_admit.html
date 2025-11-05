@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ඇතුළත් වීම තහවුරු කිරීම (Scan)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        /* Dark Green/Teal Background Gradient */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #164a3e 100%);
+            min-height: 100vh;
+            color: #e5e5e5; /* Light text for dark background */
+            transition: background-color 0.5s ease;
+        }
+        
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: rgba(4, 98, 48, 0.2); /* Dark Green with Transparency */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* Button Animation/Aesthetics */
+        .btn-primary {
+            background: #10b981; /* Teal */
+            color: #0f172a;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #059669;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Input/Form styling for dark mode */
+        input[type="text"], input[type="date"] {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+        input[type="text"]:focus, input[type="date"]:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Scanner specific styles */
+        #reader {
+            border: 2px solid #10b981 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Status message styles */
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .status-info {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+    </style>
+
+    <!-- Supabase, QR Scanner CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 p-6 rounded-lg glass-card flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-white">ඇතුළත් වීම සටහන් කිරීම</h1>
+                <p class="text-gray-300 mt-2">QR කේතය ස්කෑන් කරන්න හෝ දර්ශක අංකය ඇතුළත් කරන්න</p>
+            </div>
+            <nav>
+                <a href="index.html" class="btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg">
+                    පාලක පුවරුව
+                </a>
+            </nav>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- QR ස්කෑන් කිරීමේ කොටස -->
+            <div class="glass-card p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">QR කේතය ස්කෑන් කරන්න</h2>
+                <div id="reader" class="w-full max-w-sm mx-auto rounded-lg overflow-hidden mb-4"></div>
+                <p class="text-center text-gray-300 text-sm">ඔබේ උපාංගයේ කැමරාව මෙහි පෙන්වන්න</p>
+                
+                <div class="text-center mt-6">
+                    <button onclick="refreshScanner()" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-xl">
+                        නැවත අරඹන්න
+                    </button>
+                </div>
+            </div>
+
+            <!-- අතින් ඇතුළත් කිරීමේ කොටස -->
+            <div class="glass-card p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">දර්ශක අංකය ඇතුළත් කරන්න</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="admit-index-input" class="block text-sm font-medium text-gray-300 mb-2">දර්ශක අංකය</label>
+                        <input type="text" id="admit-index-input" placeholder="ENT-XXXXXX" 
+                               class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                    </div>
+                    
+                    <button id="admit-check-btn" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-xl transition duration-300">
+                        ඇතුළත් වීම තහවුරු කරන්න
+                    </button>
+                </div>
+
+                <div id="admit-status-message" class="mt-6 p-4 rounded-lg hidden font-semibold text-center"></div>
+            </div>
+        </main>
+
+        <!-- Instructions Section -->
+        <div class="glass-card p-6 mt-8">
+            <h3 class="text-xl font-semibold mb-4 text-white text-center">උපදෙස්</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="p-4">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white font-bold">1</span>
+                    </div>
+                    <p class="text-gray-300">QR කේතය ස්කෑන් කරන්න හෝ දර්ශක අංකය ඇතුළත් කරන්න</p>
+                </div>
+                <div class="p-4">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white font-bold">2</span>
+                    </div>
+                    <p class="text-gray-300">තොරතුරු ස්වයංක්‍රීයව පරීක්ෂා වේ</p>
+                </div>
+                <div class="p-4">
+                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white font-bold">3</span>
+                    </div>
+                    <p class="text-gray-300">ඇතුළත් වීම සාර්ථකව සටහන් වේ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Supabase Config and Initialization ---
+        const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyYnZpdXBscG1wd3Btb213a3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODg3NzMsImV4cCI6MjA3Nzg2NDc3M30.WaHCepK7F4_6hTGfrdwgo75qbPqaN9f2xzlxS9etCks';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let html5QrCode = null;
+
+        // --- Utility Functions ---
+
+        // දත්ත ඇතුළු කිරීමේ තත්ත්ව පණිවිඩය පෙන්වීම
+        function showAdmitStatus(message, type = 'success') {
+            const statusEl = document.getElementById('admit-status-message');
+            statusEl.textContent = message;
+            statusEl.className = `mt-6 p-4 rounded-lg font-semibold text-center`;
+            statusEl.classList.remove('hidden', 'status-success', 'status-error', 'status-info');
+            
+            if (type === 'success') {
+                statusEl.classList.add('status-success');
+            } else if (type === 'error') {
+                statusEl.classList.add('status-error');
+            } else { // info/loading
+                statusEl.classList.add('status-info');
+            }
+            statusEl.classList.remove('hidden');
+            setTimeout(() => statusEl.classList.add('hidden'), 5000);
+        }
+
+        // ස්කෑනරය සහ පිටුව නැවත අරඹන්න
+        function refreshScanner() {
+            // 1. Scanner නවත්වන්න (Stop the scanner)
+            if (html5QrCode && html5QrCode.getState() !== 0) {
+                html5QrCode.stop().catch(err => console.error("Could not stop scanner on refresh:", err));
+            }
+            
+            // 2. තත්ත්ව පණිවිඩය ඉවත් කරන්න (Clear status message)
+            document.getElementById('admit-status-message').classList.add('hidden');
+            
+            // 3. අතින් ඇතුළත් කිරීම ඉවත් කරන්න (Clear manual input)
+            document.getElementById('admit-index-input').value = '';
+
+            // 4. ස්කෑනරය නැවත ආරම්භ කරන්න (Restart scanner)
+            setTimeout(initScanner, 100); 
+            
+            showAdmitStatus('පද්ධතිය නැවත ආරම්භ කරන ලදී.', 'info');
+        }
+
+        // QR ස්කෑනරය ආරම්භ කිරීම
+        function initScanner() {
+            const qrCodeRegionId = "reader";
+            
+            if (html5QrCode && html5QrCode.getState() !== 0) {
+                // ස්කෑනරය දැනටමත් ක්‍රියාත්මක නම් නවත්වන්න
+                html5QrCode.stop().catch(err => console.error("Could not stop previous scanner:", err));
+            }
+
+            html5QrCode = new Html5Qrcode(qrCodeRegionId);
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" }, // පසුපස කැමරාව භාවිත කරන්න
+                config,
+                (decodedText, decodedResult) => {
+                    // QR කේතය සාර්ථකව ස්කෑන් කළ විට
+                    html5QrCode.stop(); // ස්කෑනරය නවත්වන්න
+                    processAdmission(decodedText);
+                    // සාර්ථක වූ පසු ස්කෑනරය නැවත ආරම්භ කිරීම (තවත් කෙනෙකුට ස්කෑන් කිරීමට)
+                    setTimeout(initScanner, 3000); 
+                },
+                (errorMessage) => {
+                    // ස්කෑන් කිරීමේ දෝෂ
+                }
+            ).catch((err) => {
+                console.error("කැමරාවට ප්‍රවේශ වීමේ දෝෂය:", err);
+                let errorMessage = "කැමරාව ආරම්භ කළ නොහැක. (HTTPS අවශ්‍ය විය හැක)";
+                
+                // දෝෂ පණිවිඩය ආරක්ෂිතව ලබා ගැනීම
+                const errMsg = err && err.message ? err.message : '';
+
+                // NotAllowedError සඳහා නිශ්චිත පණිවිඩය පෙන්වන්න
+                if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
+                    errorMessage = "කැමරාවට ප්‍රවේශ වීමට අවසර නැත. කරුණාකර ඔබගේ බ්‍රවුසරයේ කැමරා අවසරයන් (Camera Permissions) පරීක්ෂා කර නැවත උත්සාහ කරන්න.";
+                }
+
+                document.getElementById(qrCodeRegionId).innerHTML = `<p class="p-4 text-center text-red-400">${errorMessage}</p>`;
+            });
+        }
+
+        // දර්ශක අංකය මගින් ඇතුළත් කිරීම තහවුරු කිරීමේ ක්‍රියාවලිය
+        async function processAdmission(indexNumber) {
+            indexNumber = indexNumber.trim();
+            showAdmitStatus('තහවුරු කිරීම පරීක්ෂා කරමින්...', 'info');
+
+            // 1. තොරතුරු ලබා ගැනීම
+            const { data: currentData, error: readError } = await supabaseClient
+                .from('admission_cards')
+                .select('id, full_name, is_admitted, expiry_date')
+                .eq('index_number', indexNumber)
+                .single();
+
+            if (readError || !currentData) {
+                showAdmitStatus(`දර්ශක අංකය (${indexNumber}) වලංගු නොවේ!`, 'error');
+                return;
+            }
+
+            if (currentData.is_admitted) {
+                showAdmitStatus(`${currentData.full_name} දැනටමත් ඇතුළත් කර ඇත.`, 'error');
+                return;
+            }
+
+            // කල් ඉකුත් වීමේ දිනය පරීක්ෂා කිරීම
+            if (new Date(currentData.expiry_date) < new Date()) {
+                showAdmitStatus(`කාඩ්පත කල් ඉකුත් වී ඇත (${currentData.expiry_date})!`, 'error');
+                return;
+            }
+
+            // 2. ඇතුළත් කිරීමේ තත්ත්වය යාවත්කාලීන කිරීම
+            const { error: updateError } = await supabaseClient
+                .from('admission_cards')
+                .update({ is_admitted: true, admitted_at: new Date().toISOString() })
+                .eq('id', currentData.id);
+
+            if (updateError) {
+                showAdmitStatus(`ඇතුළත් කිරීම සටහන් කිරීම අසාර්ථක විය: ${updateError.message}`, 'error');
+            } else {
+                showAdmitStatus(`${currentData.full_name} සාර්ථකව ඇතුළත් කරන ලදී! (${indexNumber})`, 'success');
+                // සාර්ථක වූ පසු, ඇතුළත් කිරීමේ අංකය ඉවත් කිරීම
+                document.getElementById('admit-index-input').value = '';
+            }
+        }
+        
+        // Manual input button event
+        document.getElementById('admit-check-btn').addEventListener('click', () => {
+            const indexNumber = document.getElementById('admit-index-input').value.trim();
+            if (indexNumber) {
+                processAdmission(indexNumber);
+            } else {
+                showAdmitStatus('කරුණාකර දර්ශක අංකයක් ඇතුළත් කරන්න.', 'error');
+            }
+        });
+
+        // Allow Enter key to submit manual input
+        document.getElementById('admit-index-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('admit-check-btn').click();
+            }
+        });
+
+        // Initial Load
+        window.onload = function() {
+            initScanner();
+        };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Admission System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        /* Dark Green/Teal Background Gradient */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #164a3e 100%);
+            min-height: 100vh;
+            color: #e5e5e5; /* Light text for dark background */
+            transition: background-color 0.5s ease;
+        }
+        
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: rgba(4, 98, 48, 0.2); /* Dark Green with Transparency */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* Button Animation/Aesthetics */
+        .btn-primary {
+            background: #10b981; /* Teal */
+            color: #0f172a;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #059669;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Input/Form styling for dark mode */
+        input[type="text"], input[type="date"] {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+        input[type="text"]:focus, input[type="date"]:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+        }
+        
+        /* Print/PDF Admit Card Style - Highly styled for color PDF */
+        .admit-card-print {
+            border: 4px solid #10b981; 
+            padding: 2.5rem;
+            max-width: 650px;
+            margin: 2rem auto;
+            background: #ffffff; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            color: #1f2937;
+            border-radius: 12px;
+        }
+        .admit-card-header {
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .admit-card-status-admitted {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .admit-card-status-pending {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Hide elements during print that are not part of the card */
+        @media print {
+            body * { visibility: hidden; }
+            #admit-card-container, #admit-card-container * { visibility: visible; }
+            #admit-card-container { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none; }
+        }
+    </style>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 p-4 rounded-lg glass-card flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">Admission Control Panel</h1>
+            <nav>
+                <button onclick="renderView('admin')" class="view-btn btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg">
+                    Admin Panel
+                </button>
+                <a href="scan_admit.html" target="_blank" class="view-btn bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg ml-2 inline-block">
+                    Verify Admission (Scanner)
+                </a>
+            </nav>
+        </header>
+
+        <!-- Main Content Section -->
+        <main id="app-container">
+            
+            <!-- Admin View -->
+            <div id="admin-view" class="view-section">
+                <h2 class="text-2xl font-semibold mb-4 text-white">Create New Admission Card</h2>
+                <div class="glass-card p-6 mb-8">
+                    <form id="create-card-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="full_name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
+                            <input type="text" id="full_name" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                        </div>
+                        <div>
+                            <label for="nic_number" class="block text-sm font-medium text-gray-300 mb-1">NIC Number</label>
+                            <input type="text" id="nic_number" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                        </div>
+                        <div>
+                            <label for="expiry_date" class="block text-sm font-medium text-gray-300 mb-1">Expiry Date</label>
+                            <input type="date" id="expiry_date" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                        </div>
+                        <div class="md:col-span-3 flex justify-end">
+                            <button type="submit" class="btn-primary font-bold py-3 px-8 rounded-lg shadow-xl">
+                                Create Card
+                            </button>
+                        </div>
+                    </form>
+                    <div id="status-message" class="mt-4 text-center p-3 rounded-lg hidden"></div>
+                </div>
+
+                <h2 class="text-2xl font-semibold mb-4 text-white">Manage Admission Cards</h2>
+                <div class="glass-card p-6 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-800 bg-opacity-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Index No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Expiry Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Admission Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-cards-table" class="bg-transparent divide-y divide-gray-700">
+                            <!-- Data loaded here -->
+                        </tbody>
+                    </table>
+                    <div id="loading-spinner" class="mt-4 text-center hidden">
+                        <!-- Loading Spinner -->
+                        <svg class="animate-spin h-6 w-6 text-green-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm mt-2 block">Loading data...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download View -->
+            <div id="download-view" class="view-section hidden">
+                <h2 class="text-2xl font-semibold mb-6 text-white no-print">Admission Card Download</h2>
+                
+                <div id="admit-card-container">
+                    <!-- The card to be rendered/downloaded -->
+                    <div class="admit-card-print">
+                        <div class="admit-card-header flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-3xl font-extrabold text-[#10b981]">OFFICIAL ADMISSION CARD</h3>
+                                <p class="text-sm text-gray-500">Please present this card for verification.</p>
+                            </div>
+                            <div id="qr-code-display" class="w-24 h-24 border-2 border-gray-200 p-1 flex items-center justify-center bg-white">
+                                <!-- QR Code will be drawn here -->
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 text-gray-800">
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-600">Index No:</span>
+                                <span id="card-index" class="font-bold text-xl text-red-600 block"></span>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-600">Name:</span>
+                                <span id="card-name" class="block font-semibold"></span>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-600">NIC:</span>
+                                <span id="card-nic" class="block"></span>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <span class="font-medium text-gray-600">Expiry Date:</span>
+                                <span id="card-expiry" class="block"></span>
+                            </div>
+                            <div id="card-status-info" class="p-3 mt-4 rounded-lg font-extrabold text-center text-lg"></div>
+                        </div>
+                        
+                        <div class="mt-8 text-center border-t pt-4 text-sm text-gray-500">
+                            <p>This is a system-generated document. Subject to verification.</p>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="text-center mt-8 no-print">
+                    <button onclick="downloadPDF()" class="btn-primary font-bold py-3 px-10 rounded-lg shadow-xl text-white">
+                        <svg class="w-5 h-5 inline mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download Color PDF
+                    </button>
+                    <button onclick="window.print()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-xl ml-4">
+                        Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal for Edit/Confirm Delete -->
+            <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
+                <div class="glass-card p-8 w-full max-w-md">
+                    <h3 class="text-xl font-bold mb-6 text-white" id="modal-title">Edit Card Information</h3>
+                    <form id="edit-card-form">
+                        <input type="hidden" id="edit-id">
+                        <div class="mb-4">
+                            <label for="edit-full_name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
+                            <input type="text" id="edit-full_name" required class="w-full p-3 border rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label for="edit-nic_number" class="block text-sm font-medium text-gray-300 mb-1">NIC Number</label>
+                            <input type="text" id="edit-nic_number" required class="w-full p-3 border rounded-lg">
+                        </div>
+                        <div class="mb-6">
+                            <label for="edit-expiry_date" class="block text-sm font-medium text-gray-300 mb-1">Expiry Date</label>
+                            <input type="date" id="edit-expiry_date" required class="w-full p-3 border rounded-lg">
+                        </div>
+                        <div id="delete-confirm-section" class="mb-6 p-4 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg hidden">
+                            <p class="text-red-300 font-semibold">Are you sure you want to permanently DELETE this admission card?</p>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                                Cancel
+                            </button>
+                            <button type="submit" id="modal-action-btn" class="btn-primary py-2 px-4 rounded-lg">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Supabase Config and Initialization ---
+        const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyYnZpdXBscG1wd3Btb213a3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODg3NzMsImV4cCI6MjA3Nzg2NDc3M30.WaHCepK7F4_6hTGfrdwgo75qbPqaN9f2xzlxS9etCks';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // --- View Rendering Logic ---
+        function renderView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            const viewElement = document.getElementById(`${viewName}-view`);
+            if (viewElement) {
+                viewElement.classList.remove('hidden');
+                history.pushState(null, '', `#${viewName}`);
+
+                if (viewName === 'admin') {
+                    loadAdminTable();
+                }
+            }
+        }
+
+        // --- Utility Functions ---
+        function generateUniqueIndex() {
+            const prefix = 'ENT-';
+            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const timestampPart = Date.now().toString().slice(-4);
+            return prefix + timestampPart + randomPart;
+        }
+
+        function showStatus(message, type = 'success') {
+            const el = document.getElementById('status-message');
+            el.textContent = message;
+            el.className = `mt-4 text-center p-3 rounded-lg font-semibold`;
+            el.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
+            
+            if (type === 'success') {
+                el.classList.add('bg-green-900', 'text-green-300', 'glass-card');
+            } else {
+                el.classList.add('bg-red-900', 'text-red-300', 'glass-card');
+            }
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        // --- QR Code Generation Function (using qrcode-generator) ---
+        function generateQRCode(text, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // Clear previous QR code
+            
+            try {
+                if (typeof qrcode === 'undefined') {
+                    throw new Error('QR code library not loaded');
+                }
+                
+                const typeNumber = 0; 
+                const errorCorrectionLevel = 'H'; 
+                const qr = qrcode(typeNumber, errorCorrectionLevel);
+                qr.addData(text);
+                qr.make();
+                
+                // Create QR code as SVG for better quality (especially for PDF)
+                const svg = qr.createSvgTag({
+                    scalable: true,
+                    margin: 0
+                });
+                
+                container.innerHTML = svg;
+                container.querySelector('svg').classList.add('w-full', 'h-full');
+            } catch (error) {
+                console.error('QR Code generation error:', error);
+                container.innerHTML = `
+                    <div class="text-center text-red-500 text-xs">
+                        <p>QR Error</p>
+                        <p>${text}</p>
+                    </div>`;
+            }
+        }
+
+        // --- PDF Generation Logic ---
+        function downloadPDF() {
+            // Get the element to convert
+            const input = document.querySelector('.admit-card-print');
+            
+            // Temporary scale up for higher resolution capture
+            const scale = 2; 
+            
+            html2canvas(input, {
+                scale: scale,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff' // Set explicit white background for card
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg');
+                const pdf = new window.jspdf.jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [input.offsetWidth * scale, input.offsetHeight * scale]
+                });
+                
+                // Calculate dimensions for PDF
+                const imgWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                pdf.save(`Admission_Card_${document.getElementById('card-index').textContent}.pdf`);
+            }).catch(error => {
+                console.error("PDF generation failed:", error);
+                // Fallback to standard print if PDF generation fails
+                window.print(); 
+            });
+        }
+
+
+        // --- ADMIN VIEW Logic ---
+        document.getElementById('create-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('full_name').value;
+            const nic = document.getElementById('nic_number').value;
+            const expiry = document.getElementById('expiry_date').value;
+
+            const indexNumber = generateUniqueIndex();
+
+            // Clear inputs immediately for better UX
+            document.getElementById('create-card-form').reset();
+            
+            const { data, error } = await supabaseClient
+                .from('admission_cards')
+                .insert([{ 
+                    index_number: indexNumber, 
+                    full_name: name, 
+                    nic_number: nic, 
+                    expiry_date: expiry 
+                }])
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error inserting data:', error);
+                showStatus(`Failed to create card: ${error.message}`, 'error');
+            } else {
+                showStatus(`Card successfully created! Index No: ${indexNumber}`);
+                loadAdminTable();
+                
+                // Custom Modal for download confirmation
+                const confirmDownload = document.createElement('div');
+                confirmDownload.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50';
+                confirmDownload.innerHTML = `
+                    <div class="glass-card p-6 w-full max-w-sm text-center">
+                        <p class="text-lg mb-4 text-white">Card created! Do you want to download the Admission Card (Index: ${indexNumber})?</p>
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-3 transition" onclick="window.open('?index=${indexNumber}#download', '_blank'); this.closest('div.fixed').remove();">Yes, Download</button>
+                        <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition" onclick="this.closest('div.fixed').remove();">No, Thanks</button>
+                    </div>`;
+                document.body.appendChild(confirmDownload);
+            }
+        });
+
+        async function loadAdminTable() {
+            const tableBody = document.getElementById('admin-cards-table');
+            const spinner = document.getElementById('loading-spinner');
+            spinner.classList.remove('hidden');
+            tableBody.innerHTML = '';
+
+            const { data, error } = await supabaseClient
+                .from('admission_cards')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            spinner.classList.add('hidden');
+
+            if (error) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">Error loading data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No admission cards found.</td></tr>`;
+                return;
+            }
+
+            data.forEach(card => {
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-800 transition duration-150';
+
+                const admittedText = card.is_admitted ? 'Admitted' : 'Pending';
+                const admittedClass = card.is_admitted ? 'text-green-400' : 'text-yellow-400';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${card.index_number}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${card.full_name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${card.expiry_date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${admittedClass}">${admittedText}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="handleEdit('${card.id}', '${card.full_name}', '${card.nic_number}', '${card.expiry_date}')" class="text-indigo-400 hover:text-indigo-200 mr-3 transition">Edit</button>
+                        <button onclick="handleAction('${card.id}', 'delete')" class="text-red-400 hover:text-red-200 transition">Delete</button>
+                        <button onclick="window.open('?index=${card.index_number}#download', '_blank')" class="text-green-400 hover:text-green-200 ml-3 transition">Download</button>
+                    </td>
+                `;
+            });
+        }
+
+        function handleEdit(id, name, nic, expiry) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-full_name').value = name;
+            document.getElementById('edit-nic_number').value = nic;
+            document.getElementById('edit-expiry_date').value = expiry;
+            document.getElementById('modal-title').textContent = 'Edit Card Information';
+            document.getElementById('modal-action-btn').textContent = 'Save Changes';
+            document.getElementById('modal-action-btn').classList.remove('bg-red-500', 'hover:bg-red-600');
+            document.getElementById('modal-action-btn').classList.add('btn-primary');
+            document.getElementById('delete-confirm-section').classList.add('hidden');
+            document.getElementById('edit-modal').classList.remove('hidden');
+            
+            // Enable fields for edit
+            document.getElementById('edit-full_name').removeAttribute('disabled');
+            document.getElementById('edit-nic_number').removeAttribute('disabled');
+            document.getElementById('edit-expiry_date').removeAttribute('disabled');
+        }
+
+        function handleAction(id, action) {
+            if (action === 'delete') {
+                document.getElementById('edit-id').value = id;
+                document.getElementById('modal-title').textContent = 'Confirm Card Deletion';
+                document.getElementById('modal-action-btn').textContent = 'Confirm Delete';
+                document.getElementById('modal-action-btn').classList.remove('btn-primary');
+                document.getElementById('modal-action-btn').classList.add('bg-red-600', 'hover:bg-red-700');
+                document.getElementById('delete-confirm-section').classList.remove('hidden');
+                
+                // Disable fields for delete confirmation
+                document.getElementById('edit-full_name').setAttribute('disabled', 'true');
+                document.getElementById('edit-nic_number').setAttribute('disabled', 'true');
+                document.getElementById('edit-expiry_date').setAttribute('disabled', 'true');
+
+                document.getElementById('edit-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            document.getElementById('edit-full_name').removeAttribute('disabled');
+            document.getElementById('edit-nic_number').removeAttribute('disabled');
+            document.getElementById('edit-expiry_date').removeAttribute('disabled');
+            document.getElementById('edit-card-form').reset();
+        }
+
+        document.getElementById('edit-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const actionBtnText = document.getElementById('modal-action-btn').textContent;
+
+            closeModal();
+
+            if (actionBtnText.includes('Delete')) {
+                // Delete action
+                const { error } = await supabaseClient
+                    .from('admission_cards')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    showStatus(`Failed to delete card: ${error.message}`, 'error');
+                } else {
+                    showStatus('Card successfully deleted.');
+                    loadAdminTable();
+                }
+
+            } else {
+                // Update action
+                const name = document.getElementById('edit-full_name').value;
+                const nic = document.getElementById('edit-nic_number').value;
+                const expiry = document.getElementById('edit-expiry_date').value;
+
+                const { error } = await supabaseClient
+                    .from('admission_cards')
+                    .update({ full_name: name, nic_number: nic, expiry_date: expiry })
+                    .eq('id', id);
+
+                if (error) {
+                    showStatus(`Failed to save changes: ${error.message}`, 'error');
+                } else {
+                    showStatus('Changes saved successfully.');
+                    loadAdminTable();
+                }
+            }
+        });
+
+        // --- DOWNLOAD VIEW Logic ---
+        async function loadDownloadCard(indexNumber) {
+            const container = document.getElementById('admit-card-container');
+            container.innerHTML = `
+                <div class="text-center p-8 glass-card mt-8">
+                    <p class="text-white font-bold text-xl">Loading card details...</p>
+                    <svg class="animate-spin h-6 w-6 text-green-400 mx-auto mt-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>`;
+
+
+            const { data, error } = await supabaseClient
+                .from('admission_cards')
+                .select('*')
+                .eq('index_number', indexNumber)
+                .single();
+
+            // Reset the container HTML to the original structure (defined in the HTML body)
+            container.innerHTML = `
+                 <div class="admit-card-print">
+                    <div class="admit-card-header flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-3xl font-extrabold text-[#10b981]">OFFICIAL ADMISSION CARD</h3>
+                            <p class="text-sm text-gray-500">Please present this card for verification.</p>
+                        </div>
+                        <div id="qr-code-display" class="w-24 h-24 border-2 border-gray-200 p-1 flex items-center justify-center bg-white">
+                            <!-- QR Code will be drawn here -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 text-gray-800">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium text-gray-600">Index No:</span>
+                            <span id="card-index" class="font-bold text-xl text-red-600 block"></span>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium text-gray-600">Name:</span>
+                            <span id="card-name" class="block font-semibold"></span>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium text-gray-600">NIC:</span>
+                            <span id="card-nic" class="block"></span>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium text-gray-600">Expiry Date:</span>
+                            <span id="card-expiry" class="block"></span>
+                        </div>
+                        <div id="card-status-info" class="p-3 mt-4 rounded-lg font-extrabold text-center text-lg"></div>
+                    </div>
+                    
+                    <div class="mt-8 text-center border-t pt-4 text-sm text-gray-500">
+                        <p>This is a system-generated document. Subject to verification.</p>
+                    </div>
+                </div>
+            `;
+            
+            if (error || !data) {
+                container.innerHTML = `
+                    <div class="text-center p-8 glass-card mt-8">
+                        <p class="text-red-400 font-bold text-xl">Admission Card (Index: ${indexNumber}) not found.</p>
+                        <button onclick="renderView('admin')" class="mt-4 text-green-400 hover:text-green-200 transition">Go to Admin Panel</button>
+                    </div>`;
+                return;
+            }
+
+            // Load data into UI
+            document.getElementById('card-index').textContent = data.index_number;
+            document.getElementById('card-name').textContent = data.full_name;
+            document.getElementById('card-nic').textContent = data.nic_number;
+            document.getElementById('card-expiry').textContent = data.expiry_date;
+            
+            const statusInfo = document.getElementById('card-status-info');
+            statusInfo.classList.remove('admit-card-status-admitted', 'admit-card-status-pending');
+
+            if (data.is_admitted) {
+                statusInfo.textContent = `STATUS: ADMITTED (${new Date(data.admitted_at).toLocaleString()})`;
+                statusInfo.classList.add('admit-card-status-admitted');
+            } else {
+                statusInfo.textContent = `STATUS: PENDING ADMISSION`;
+                statusInfo.classList.add('admit-card-status-pending');
+            }
+
+            // Generate QR Code
+            setTimeout(() => {
+                generateQRCode(data.index_number, 'qr-code-display');
+            }, 100);
+        }
+
+        // --- Initial Load & Routing ---
+        window.onload = function() {
+            const hash = window.location.hash.substring(1);
+            const urlParams = new URLSearchParams(window.location.search);
+            const indexFromUrl = urlParams.get('index');
+
+            if (indexFromUrl && hash === 'download') {
+                renderView('download');
+                loadDownloadCard(indexFromUrl);
+            } else {
+                renderView('admin');
+            }
+            
+            window.addEventListener('popstate', () => {
+                const newHash = window.location.hash.substring(1) || 'admin';
+                const newIndex = new URLSearchParams(window.location.search).get('index');
+                if (newHash === 'download' && newIndex) {
+                    renderView('download');
+                    loadDownloadCard(newIndex);
+                } else {
+                    renderView(newHash);
+                }
+            });
+        };
+    </script>
+
+</body>
+</html>

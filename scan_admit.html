@@ -71,6 +71,10 @@
             overflow: hidden;
             background: rgba(31, 41, 55, 0.8);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            min-height: 250px; /* Ensure space for error message */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         /* Mobile optimizations */
@@ -87,6 +91,7 @@
             }
             #reader {
                 max-width: 100% !important;
+                min-height: 200px;
             }
         }
 
@@ -155,6 +160,7 @@
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
             <div class="glass-card p-4 md:p-6">
                 <h2 class="text-xl md:text-2xl font-semibold mb-4 text-white text-center">Scan QR Code</h2>
+                <!-- #reader div will show camera or error message -->
                 <div id="reader" class="w-full max-w-sm mx-auto rounded-lg overflow-hidden mb-4"></div>
                 <p class="text-center text-green-200 text-xs md:text-sm">Point your device camera here</p>
                 
@@ -360,47 +366,73 @@
                 { facingMode: "environment" }, // Use back camera
                 config,
                 (decodedText, decodedResult) => {
-                    // When QR code is successfully scanned
-                    if (!isProcessing) {
-                        isProcessing = true;
-                        // Stop the scanner temporarily
-                        html5QrCode.stop().catch(err => console.error("Error stopping scanner:", err));
-                        processAdmission(decodedText);
-                    }
+                    // *** FIX 1: Call processAdmission directly. It will handle the 'isProcessing' flag. ***
+                    processAdmission(decodedText, true); // Pass 'true' to indicate it's from the scanner
                 },
                 (errorMessage) => {
                     // Scanning errors are generally ignored to keep the flow smooth
-                    // Only log if it's a significant error
-                    if (errorMessage && !errorMessage.includes('NotFoundException')) {
-                        // console.log("Scanning:", errorMessage);
-                    }
                 }
-            ).catch((err) => {
-                console.error("Camera access error:", err);
-                let errorMessage = "Could not start camera. (HTTPS may be required)";
-                
-                const errMsg = err && err.message ? err.message : '';
+            )
+            // *** IMPROVED ERROR HANDLING BLOCK ***
+            .catch((err) => {
+                console.error("Camera Initialization Error:", err);
+                const readerDiv = document.getElementById(qrCodeRegionId);
+                let title = "Camera Error";
+                let message = "Could not start the camera. Please ensure you are on a secure (HTTPS) connection and have granted permissions.";
 
-                if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
-                    errorMessage = "Permission to access camera is denied. Please check your browser's Camera Permissions and try again.";
-                } else if (err && (err.name === 'NotFoundError' || errMsg.includes('NotFoundError'))) {
-                    errorMessage = "No camera found. Please connect a camera device.";
+                const errMsg = err && err.message ? err.message : String(err);
+
+                if (window.location.protocol === 'file:') {
+                    title = "File Access Error";
+                    message = "This scanner cannot run from a local file (`file:///`).\nPlease use a local server (like VS Code 'Live Server') or host it on a secure (HTTPS) website.";
+                } else if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
+                    title = "Permission Denied";
+                    message = "You have blocked camera access.\nPlease click the 🔒 icon in your browser's address bar and 'Allow' camera access, then restart.";
+                } else if (err && (err.name === 'NotFoundError' || errMsg.includes('NotFoundError') || errMsg.includes('device not found'))) {
+                    title = "No Camera Found";
+                    message = "No camera was detected. Please ensure your webcam is connected and enabled.";
+                } else if (err && (err.name === 'NotReadableError' || errMsg.includes('NotReadableError') || errMsg.includes('in use'))) {
+                    title = "Camera in Use";
+                    message = "Your camera is already being used by another application (like Zoom, Teams, or OBS).\nPlease close other applications and restart.";
                 }
 
-                document.getElementById(qrCodeRegionId).innerHTML = `<p class="p-4 text-center text-red-400 text-sm">${errorMessage}</p>`;
+                // Display the error message prominently in the reader box
+                // We use the 'status-error' class styles defined in the <style> tag
+                readerDiv.innerHTML = `
+                    <div class="p-4 m-4 rounded-lg status-error text-center w-full">
+                        <h4 class="font-bold text-lg mb-2">${title}</h4>
+                        <p class="text-sm">${message}</p>
+                    </div>
+                `;
             });
         }
 
         // Admission confirmation process by index number
-        async function processAdmission(indexNumber) {
+        async function processAdmission(indexNumber, isFromScanner = false) {
             indexNumber = indexNumber.trim();
 
-            if (isProcessing) return; // Prevent double submission
-            isProcessing = true;
+            // *** FIX 2: Centralized 'isProcessing' check. ***
+            // This now handles both scanner (which calls repeatedly) and manual button.
+            if (isProcessing) {
+                console.log("Already processing, scan ignored.");
+                return;
+            }
+            isProcessing = true; // Set flag immediately
 
+            // *** FIX 3: Show modal FIRST. ***
             showModal('Processing...', `Please wait...\n\nChecking details for Index: ${indexNumber}`, 'info');
             
-            // Note: Scanner will be restarted after processing completes 
+            // *** FIX 4: Stop the scanner (if applicable) AFTER modal is visible. ***
+            if (isFromScanner && html5QrCode) {
+                // Short delay to ensure modal renders before camera feed stops
+                setTimeout(() => {
+                    const currentState = html5QrCode.getState();
+                    if (currentState !== 0 && currentState !== 2) { // Not stopped
+                        html5QrCode.stop().catch(err => console.error("Error stopping scanner:", err));
+                        console.log("Scanner stopped after modal.");
+                    }
+                }, 100); // 100ms delay
+            }
 
             // 1. Retrieving information
             const { data: currentData, error: readError } = await supabaseClient
@@ -464,10 +496,10 @@
         
         // Manual input button event
         document.getElementById('admit-check-btn').addEventListener('click', () => {
-            if (isProcessing) return;
+            // *** FIX 5: Let processAdmission handle the 'isProcessing' flag. ***
             const indexNumber = document.getElementById('admit-index-input').value.trim();
             if (indexNumber) {
-                processAdmission(indexNumber);
+                processAdmission(indexNumber, false); // Pass 'false' for manual entry
             } else {
                 showModal('Input Required', 'Please enter an Index Number.', 'error');
             }

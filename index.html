@@ -4,85 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Admission System</title>
-    <link rel="icon" type="image/x-icon" href="https://dilnuka13.github.io/AL/favicon.ico">
+    <link rel="icon" type="image/png" href="favicon.ico.png">
+    <link rel="apple-touch-icon" href="favicon.ico.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         
-        /* Dark Green/Teal Background Gradient */
+        /* DE Education.lk Dark Mode - Green Theme */
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #164a3e 100%);
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
             min-height: 100vh;
-            color: #e5e5e5; /* Light text for dark background */
+            color: #e5e5e5;
             transition: background-color 0.5s ease;
+            padding: 0;
         }
         
-        /* Glassmorphism Card Style */
+        /* Dark Card Style - Green Theme */
         .glass-card {
-            background: rgba(4, 98, 48, 0.2); /* Dark Green with Transparency */
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            border-radius: 16px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         .glass-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+            border-color: rgba(34, 197, 94, 0.4);
         }
 
-        /* Button Animation/Aesthetics */
+        /* Modern Button Style - Green Gradient */
         .btn-primary {
-            background: #10b981; /* Teal */
-            color: #0f172a;
-            font-weight: 700;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            font-weight: 600;
             transition: all 0.3s ease;
+            border: none;
         }
         .btn-primary:hover {
-            background: #059669;
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.4), 0 4px 6px -2px rgba(4, 120, 87, 0.4);
         }
         
-        /* Input/Form styling for dark mode */
+        /* Input/Form styling - Dark theme */
         input[type="text"], input[type="date"] {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
             color: #ffffff;
+            transition: all 0.3s ease;
         }
         input[type="text"]:focus, input[type="date"]:focus {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(31, 41, 55, 1);
             border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            outline: none;
         }
         
-        /* Print/PDF Admit Card Style - Highly styled for color PDF */
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .glass-card {
+                border-radius: 12px;
+            }
+            button, a.view-btn {
+                min-height: 44px; /* Better touch target */
+                touch-action: manipulation;
+            }
+        }
+        
+        /* View Type Styles */
+        #download-cards-container[data-view-type="list"] {
+            grid-template-columns: 1fr;
+        }
+        #download-cards-container[data-view-type="medium"] {
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        }
+        #download-cards-container[data-view-type="large"] {
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        }
+
+        .card-item-list {
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .card-item-list:hover {
+            transform: translateY(-2px);
+            border-color: rgba(34, 197, 94, 0.6);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-item-medium, .card-item-large {
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .card-item-medium:hover, .card-item-large:hover {
+            transform: translateY(-4px);
+            border-color: rgba(34, 197, 94, 0.6);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Print/PDF Admit Card Style - Modern Professional design */
         .admit-card-print {
-            border: 4px solid #10b981; 
+            border: 4px solid #059669; 
             padding: 2.5rem;
             max-width: 650px;
             margin: 2rem auto;
-            background: #ffffff; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             color: #1f2937;
-            border-radius: 12px;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .admit-card-print::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #059669 0%, #047857 50%, #065f46 100%);
         }
         .admit-card-header {
-            border-bottom: 2px solid #10b981;
+            border-bottom: 3px solid #059669;
             padding-bottom: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .admit-card-print img {
+            max-width: 64px;
+            max-height: 64px;
+            object-fit: contain;
+            display: block;
         }
         .admit-card-status-admitted {
-            background: #d1fae5;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
             color: #065f46;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 0.75rem;
         }
         .admit-card-status-pending {
-            background: #fee2e2;
-            color: #991b1b;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 0.75rem;
         }
 
         /* Hide elements during print that are not part of the card */
@@ -106,13 +187,19 @@
 
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="mb-8 p-4 rounded-lg glass-card flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-white">Admission Control Panel</h1>
-            <nav>
-                <button onclick="renderView('admin')" class="view-btn btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg">
-                    Admin Panel
+        <header class="mb-8 p-6 rounded-lg glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center">
+                <img src="favicon.ico.png" alt="DE Education Logo" class="w-12 h-12 mr-4 rounded-lg" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-white">Admission Control Panel</h1>
+                    <p class="text-green-200 text-sm mt-1">Manage student admission cards</p>
+                </div>
+            </div>
+            <nav class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <button onclick="showDashboard()" class="view-btn btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg text-sm md:text-base">
+                    Dashboard
                 </button>
-                <a href="scan_admit.html" target="_blank" class="view-btn bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg ml-2 inline-block">
+                <a href="scan_admit.html" target="_blank" class="view-btn bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg text-sm md:text-base text-center">
                     Verify Admission (Scanner)
                 </a>
             </nav>
@@ -121,60 +208,265 @@
         <!-- Main Content Section -->
         <main id="app-container">
             
-            <!-- Admin View -->
-            <div id="admin-view" class="view-section">
-                <h2 class="text-2xl font-semibold mb-4 text-white">Create New Admission Card</h2>
-                <div class="glass-card p-6 mb-8">
-                    <form id="create-card-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Welcome View -->
+            <div id="welcome-view" class="view-section">
+                <div class="text-center mb-8">
+                    <div class="flex items-center justify-center mb-6">
+                        <img src="favicon.ico.png" alt="DE Education Logo" class="w-20 h-20 md:w-24 md:h-24 mr-4 rounded-lg shadow-lg" onerror="this.style.display='none'">
                         <div>
-                            <label for="full_name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                            <input type="text" id="full_name" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                            <h1 class="text-4xl md:text-6xl font-bold text-white mb-2">Admission Control Panel</h1>
+                            <p class="text-green-200 text-lg md:text-xl">DE Education.lk</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-card p-6 text-center">
+                        <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-2" id="total-cards-stat">-</h3>
+                        <p class="text-green-200">Total Cards</p>
+                    </div>
+                    <div class="glass-card p-6 text-center">
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-2" id="admitted-cards-stat">-</h3>
+                        <p class="text-green-200">Admitted</p>
+                    </div>
+                    <div class="glass-card p-6 text-center">
+                        <div class="w-16 h-16 bg-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white mb-2" id="pending-cards-stat">-</h3>
+                        <p class="text-green-200">Pending</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="glass-card p-8 md:p-12 text-center">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white mb-6">Quick Actions</h2>
+                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                        <button onclick="showDashboard()" class="btn-primary font-bold py-4 px-8 rounded-lg shadow-xl text-lg hover:scale-105 transition">
+                            <svg class="w-6 h-6 inline mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                            Go to Dashboard
+                        </button>
+                        <a href="scan_admit.html" target="_blank" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-8 rounded-lg shadow-xl text-lg hover:scale-105 transition inline-flex items-center justify-center">
+                            <svg class="w-6 h-6 inline mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                            </svg>
+                            Open Scanner
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Selection View -->
+            <div id="dashboard-view" class="view-section hidden">
+                <div class="glass-card p-6 md:p-8 mb-8">
+                    <div class="flex items-center justify-center mb-6">
+                        <img src="favicon.ico.png" alt="Logo" class="w-16 h-16 mr-4 rounded-lg" onerror="this.style.display='none'">
+                        <h2 class="text-2xl md:text-3xl font-bold text-white">Dashboard Options</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <button onclick="selectOption('create')" class="glass-card p-6 hover:border-green-400 transition cursor-pointer text-left group">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Create Card</h3>
+                            </div>
+                            <p class="text-green-200">Create new admission cards</p>
+                        </button>
+                        <button onclick="selectOption('manage')" class="glass-card p-6 hover:border-green-400 transition cursor-pointer text-left group">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Manage Cards</h3>
+                            </div>
+                            <p class="text-green-200">View and manage registered cards</p>
+                        </button>
+                        <button onclick="selectOption('download')" class="glass-card p-6 hover:border-green-400 transition cursor-pointer text-left group">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Download Cards</h3>
+                            </div>
+                            <p class="text-green-200">Search and download admission cards</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Card View -->
+            <div id="create-view" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl md:text-2xl font-semibold text-white">Create New Admission Card</h2>
+                    <button onclick="showDashboard()" class="text-green-300 hover:text-green-200 text-sm font-medium">
+                        ← Back to Dashboard
+                    </button>
+                </div>
+                <div class="glass-card p-4 md:p-6 mb-8 max-w-4xl mx-auto">
+                    <form id="create-card-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div>
+                            <label for="full_name" class="block text-sm font-medium text-green-200 mb-1">Full Name</label>
+                            <input type="text" id="full_name" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400 text-base bg-gray-800 text-white border-gray-600">
                         </div>
                         <div>
-                            <label for="nic_number" class="block text-sm font-medium text-gray-300 mb-1">NIC Number</label>
-                            <input type="text" id="nic_number" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                            <label for="nic_number" class="block text-sm font-medium text-green-200 mb-1">NIC Number</label>
+                            <input type="text" id="nic_number" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400 text-base bg-gray-800 text-white border-gray-600">
                         </div>
                         <div>
-                            <label for="expiry_date" class="block text-sm font-medium text-gray-300 mb-1">Expiry Date</label>
-                            <input type="date" id="expiry_date" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                            <label for="expiry_date" class="block text-sm font-medium text-green-200 mb-1">Expiry Date</label>
+                            <input type="date" id="expiry_date" required class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400 text-base bg-gray-800 text-white border-gray-600">
                         </div>
                         <div class="md:col-span-3 flex justify-end">
-                            <button type="submit" class="btn-primary font-bold py-3 px-8 rounded-lg shadow-xl">
+                            <button type="submit" class="btn-primary font-bold py-3 px-6 md:px-8 rounded-lg shadow-xl w-full md:w-auto text-base">
                                 Create Card
                             </button>
                         </div>
                     </form>
                     <div id="status-message" class="mt-4 text-center p-3 rounded-lg hidden"></div>
                 </div>
+            </div>
 
-                <h2 class="text-2xl font-semibold mb-4 text-white">Manage Admission Cards</h2>
-                <div class="glass-card p-6 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-700">
-                        <thead class="bg-gray-800 bg-opacity-50">
+            <!-- Manage Cards View -->
+            <div id="manage-view" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl md:text-2xl font-semibold text-white">Manage Admission Cards</h2>
+                    <button onclick="showDashboard()" class="text-green-300 hover:text-green-200 text-sm font-medium">
+                        ← Back to Dashboard
+                    </button>
+                </div>
+
+                <!-- Search Bar and Filters -->
+                <div class="glass-card p-4 mb-4">
+                    <div class="flex flex-col md:flex-row gap-3 mb-3">
+                        <div class="flex-1">
+                            <input type="text" id="manage-search-input" placeholder="Search by Index No, Name, or NIC Number..." 
+                                   class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400 text-base bg-gray-800 text-white border-gray-600">
+                        </div>
+                        <button onclick="clearManageSearch()" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <!-- Status Filters -->
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <span class="text-green-200 text-sm font-medium">Filter by Status:</span>
+                        <button onclick="filterByStatus('all')" id="filter-all" class="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition filter-btn">
+                            All
+                        </button>
+                        <button onclick="filterByStatus('pending')" id="filter-pending" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-semibold transition filter-btn">
+                            Pending
+                        </button>
+                        <button onclick="filterByStatus('admitted')" id="filter-admitted" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-semibold transition filter-btn">
+                            Admitted
+                        </button>
+                    </div>
+                    
+                    <p class="text-green-200 text-sm mt-3" id="manage-search-result-count"></p>
+                </div>
+
+                <div class="glass-card p-3 md:p-6 overflow-x-auto">
+                    <div class="min-w-full">
+                        <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gradient-to-r from-green-700 to-green-800">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Index No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Expiry Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Admission Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Index No</th>
+                                <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Name</th>
+                                <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider hidden md:table-cell">NIC Number</th>
+                                <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider hidden md:table-cell">Expiry Date</th>
+                                <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
+                                <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-cards-table" class="bg-transparent divide-y divide-gray-700">
-                            <!-- Data loaded here -->
-                        </tbody>
-                    </table>
-                    <div id="loading-spinner" class="mt-4 text-center hidden">
+                        <tbody id="manage-cards-table" class="bg-transparent divide-y divide-gray-700">
+                                <!-- Data loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="manage-loading-spinner" class="mt-4 text-center hidden">
                         <!-- Loading Spinner -->
                         <svg class="animate-spin h-6 w-6 text-green-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="text-sm mt-2 block">Loading data...</span>
+                        <span class="text-sm mt-2 block text-green-200">Loading data...</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Download View -->
+            <!-- Download Cards View -->
+            <div id="download-cards-view" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-white">Download Admission Cards</h2>
+                    <button onclick="showDashboard()" class="text-green-300 hover:text-green-200 text-sm font-medium">
+                        ← Back to Dashboard
+                    </button>
+                </div>
+
+                <!-- Search and View Options -->
+                <div class="glass-card p-4 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4 items-center">
+                        <div class="flex-1 w-full">
+                            <input type="text" id="download-search-input" placeholder="Search by Index No, Name, or NIC Number..." 
+                                   class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400 text-base bg-gray-800 text-white border-gray-600">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="setViewType('list')" id="view-list-btn" title="List View" aria-label="Switch to list view" class="p-3 bg-green-700 hover:bg-green-600 text-white rounded-lg transition view-type-btn">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                            <button onclick="setViewType('medium')" id="view-medium-btn" title="Medium Grid View" aria-label="Switch to medium grid view" class="p-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition view-type-btn">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="setViewType('large')" id="view-large-btn" title="Large Grid View" aria-label="Switch to large grid view" class="p-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition view-type-btn">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-green-200 text-sm mt-3" id="download-search-result-count"></p>
+                </div>
+
+                <!-- Cards Display Area -->
+                <div id="download-cards-container" class="grid gap-4" data-view-type="list">
+                    <!-- Cards will be loaded here -->
+                </div>
+
+                <div id="download-loading-spinner" class="text-center py-8 hidden">
+                    <svg class="animate-spin h-8 w-8 text-green-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-green-200 mt-2 block">Loading cards...</span>
+                </div>
+            </div>
+
+            <!-- Download View (Single Card) -->
             <div id="download-view" class="view-section hidden">
                 <h2 class="text-2xl font-semibold mb-6 text-white no-print">Admission Card Download</h2>
                 
@@ -182,9 +474,12 @@
                     <!-- The card to be rendered/downloaded -->
                     <div class="admit-card-print">
                         <div class="admit-card-header flex justify-between items-center mb-6">
-                            <div>
-                                <h3 class="text-3xl font-extrabold text-[#10b981]">OFFICIAL ADMISSION CARD</h3>
-                                <p class="text-sm text-gray-500">Please present this card for verification.</p>
+                            <div class="flex items-center gap-4">
+                                <img src="favicon.ico.png" alt="DE Education Logo" class="w-16 h-16 object-contain" onerror="this.style.display='none'">
+                                <div>
+                                    <h3 class="text-3xl font-extrabold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">OFFICIAL ADMISSION CARD</h3>
+                                    <p class="text-sm text-gray-500">Please present this card for verification.</p>
+                                </div>
                             </div>
                             <div id="qr-code-display" class="w-24 h-24 border-2 border-gray-200 p-1 flex items-center justify-center bg-white">
                                 <!-- QR Code will be drawn here -->
@@ -192,9 +487,9 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 text-gray-800">
-                            <div class="p-3 bg-gray-50 rounded-lg">
+                            <div class="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                                 <span class="font-medium text-gray-600">Index No:</span>
-                                <span id="card-index" class="font-bold text-xl text-red-600 block"></span>
+                                <span id="card-index" class="font-bold text-xl text-green-600 block"></span>
                             </div>
                             <div class="p-3 bg-gray-50 rounded-lg">
                                 <span class="font-medium text-gray-600">Name:</span>
@@ -218,42 +513,64 @@
                     
                 </div>
                 <div class="text-center mt-8 no-print">
-                    <button onclick="downloadPDF()" class="btn-primary font-bold py-3 px-10 rounded-lg shadow-xl text-white">
-                        <svg class="w-5 h-5 inline mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Download Color PDF
-                    </button>
-                    <button onclick="window.print()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition duration-300 shadow-xl ml-4">
-                        Print
+                    <div class="glass-card p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">Download Options</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="downloadPDF()" class="btn-primary font-bold py-4 px-6 rounded-lg shadow-xl text-white flex flex-col items-center gap-2 hover:scale-105 transition">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                <span>Download PDF</span>
+                                <span class="text-xs opacity-90">High Quality</span>
+                            </button>
+                            <button onclick="downloadPDF('print')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg shadow-xl flex flex-col items-center gap-2 hover:scale-105 transition">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                </svg>
+                                <span>Print Card</span>
+                                <span class="text-xs opacity-90">Print Ready</span>
+                            </button>
+                            <button onclick="shareCard()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg shadow-xl flex flex-col items-center gap-2 hover:scale-105 transition">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                                </svg>
+                                <span>Share Card</span>
+                                <span class="text-xs opacity-90">Copy Link</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="showDashboard()" class="text-green-300 hover:text-green-200 text-sm font-medium">
+                        ← Back to Dashboard
                     </button>
                 </div>
             </div>
 
             <!-- Modal for Edit/Confirm Delete -->
-            <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
-                <div class="glass-card p-8 w-full max-w-md">
-                    <h3 class="text-xl font-bold mb-6 text-white" id="modal-title">Edit Card Information</h3>
+            <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 p-4">
+                <div class="glass-card p-4 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                    <h3 class="text-lg md:text-xl font-bold mb-4 md:mb-6 text-white" id="modal-title">Edit Card Information</h3>
                     <form id="edit-card-form">
                         <input type="hidden" id="edit-id">
                         <div class="mb-4">
-                            <label for="edit-full_name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                            <input type="text" id="edit-full_name" required class="w-full p-3 border rounded-lg">
+                            <label for="edit-full_name" class="block text-sm font-medium text-green-200 mb-1">Full Name</label>
+                            <input type="text" id="edit-full_name" required class="w-full p-3 border rounded-lg text-base focus:ring-green-400 focus:border-green-400 bg-gray-800 text-white border-gray-600">
                         </div>
                         <div class="mb-4">
-                            <label for="edit-nic_number" class="block text-sm font-medium text-gray-300 mb-1">NIC Number</label>
-                            <input type="text" id="edit-nic_number" required class="w-full p-3 border rounded-lg">
+                            <label for="edit-nic_number" class="block text-sm font-medium text-green-200 mb-1">NIC Number</label>
+                            <input type="text" id="edit-nic_number" required class="w-full p-3 border rounded-lg text-base focus:ring-green-400 focus:border-green-400 bg-gray-800 text-white border-gray-600">
                         </div>
                         <div class="mb-6">
-                            <label for="edit-expiry_date" class="block text-sm font-medium text-gray-300 mb-1">Expiry Date</label>
-                            <input type="date" id="edit-expiry_date" required class="w-full p-3 border rounded-lg">
+                            <label for="edit-expiry_date" class="block text-sm font-medium text-green-200 mb-1">Expiry Date</label>
+                            <input type="date" id="edit-expiry_date" required class="w-full p-3 border rounded-lg text-base focus:ring-green-400 focus:border-green-400 bg-gray-800 text-white border-gray-600">
                         </div>
-                        <div id="delete-confirm-section" class="mb-6 p-4 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg hidden">
-                            <p class="text-red-300 font-semibold">Are you sure you want to permanently DELETE this admission card?</p>
+                        <div id="delete-confirm-section" class="mb-6 p-4 bg-red-900 bg-opacity-30 border-2 border-red-600 rounded-lg hidden">
+                            <p class="text-red-200 font-semibold text-sm md:text-base">Are you sure you want to permanently DELETE this admission card?</p>
                         </div>
-                        <div class="flex justify-end space-x-3">
-                            <button type="button" onclick="closeModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                        <div class="flex flex-col sm:flex-row justify-end gap-3">
+                            <button type="button" onclick="closeModal()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 w-full sm:w-auto">
                                 Cancel
                             </button>
-                            <button type="submit" id="modal-action-btn" class="btn-primary py-2 px-4 rounded-lg">
+                            <button type="submit" id="modal-action-btn" class="btn-primary py-2 px-4 rounded-lg w-full sm:w-auto">
                                 Save Changes
                             </button>
                         </div>
@@ -271,6 +588,12 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // --- View Rendering Logic ---
+        let allCardsData = []; // Store all cards for search
+        let filteredCardsData = []; // Store filtered cards
+        let manageCardsData = []; // Store manage view cards
+        let filteredManageCards = []; // Store filtered manage cards
+        let currentStatusFilter = 'all'; // Current status filter
+
         function renderView(viewName) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             const viewElement = document.getElementById(`${viewName}-view`);
@@ -278,10 +601,255 @@
                 viewElement.classList.remove('hidden');
                 history.pushState(null, '', `#${viewName}`);
 
-                if (viewName === 'admin') {
-                    loadAdminTable();
+                if (viewName === 'create') {
+                    // Just show the form, nothing else needed
+                } else if (viewName === 'manage') {
+                    loadManageTable();
+                    setTimeout(setupManageSearchListener, 100);
+                } else if (viewName === 'download-cards') {
+                    loadDownloadCards();
+                    setViewType('list'); // Default to list view
                 }
             }
+        }
+
+        // Show welcome page first
+        function showWelcome() {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('welcome-view').classList.remove('hidden');
+            loadWelcomeStats();
+        }
+
+        // Load welcome page statistics
+        async function loadWelcomeStats() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('admission_cards')
+                    .select('is_admitted');
+
+                if (!error && data) {
+                    const total = data.length;
+                    const admitted = data.filter(card => card.is_admitted).length;
+                    const pending = total - admitted;
+
+                    document.getElementById('total-cards-stat').textContent = total;
+                    document.getElementById('admitted-cards-stat').textContent = admitted;
+                    document.getElementById('pending-cards-stat').textContent = pending;
+                }
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
+
+        // Show dashboard selection
+        function showDashboard() {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('dashboard-view').classList.remove('hidden');
+        }
+
+        // Select option from dashboard
+        function selectOption(option) {
+            if (option === 'create') {
+                renderView('create');
+            } else if (option === 'manage') {
+                renderView('manage');
+            } else if (option === 'download') {
+                renderView('download-cards');
+            }
+        }
+
+        // Manage View Functions
+        async function loadManageTable() {
+            const tableBody = document.getElementById('manage-cards-table');
+            const spinner = document.getElementById('manage-loading-spinner');
+            spinner.classList.remove('hidden');
+            tableBody.innerHTML = '';
+
+            const { data, error } = await supabaseClient
+                .from('admission_cards')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            spinner.classList.add('hidden');
+
+            if (error) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-400">Error loading data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            // Store all cards data
+            manageCardsData = data || [];
+            filteredManageCards = manageCardsData;
+            currentStatusFilter = 'all';
+
+            // Update filter buttons
+            updateFilterButtons();
+            
+            // Update search result count
+            updateManageResultCount();
+            
+            // Render table
+            renderManageTable(filteredManageCards);
+        }
+
+        // Filter by status
+        function filterByStatus(status) {
+            currentStatusFilter = status;
+            updateFilterButtons();
+            applyManageFilters();
+        }
+
+        // Update filter button states
+        function updateFilterButtons() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-green-700');
+                btn.classList.add('bg-gray-700');
+            });
+            document.getElementById(`filter-${currentStatusFilter}`).classList.remove('bg-gray-700');
+            document.getElementById(`filter-${currentStatusFilter}`).classList.add('bg-green-700');
+        }
+
+        // Apply filters (search + status)
+        function applyManageFilters() {
+            const searchTerm = document.getElementById('manage-search-input').value.toLowerCase().trim();
+            
+            filteredManageCards = manageCardsData.filter(card => {
+                // Status filter
+                const statusMatch = currentStatusFilter === 'all' || 
+                    (currentStatusFilter === 'pending' && !card.is_admitted) ||
+                    (currentStatusFilter === 'admitted' && card.is_admitted);
+                
+                // Search filter
+                const searchMatch = !searchTerm || 
+                    card.index_number.toLowerCase().includes(searchTerm) ||
+                    card.full_name.toLowerCase().includes(searchTerm) ||
+                    (card.nic_number && card.nic_number.toLowerCase().includes(searchTerm));
+                
+                return statusMatch && searchMatch;
+            });
+
+            renderManageTable(filteredManageCards);
+            updateManageResultCount();
+        }
+
+        // Render manage table
+        function renderManageTable(cards) {
+            const tableBody = document.getElementById('manage-cards-table');
+            tableBody.innerHTML = '';
+
+            if (cards.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">No cards found.</td></tr>`;
+                return;
+            }
+
+            cards.forEach(card => {
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-800 transition duration-150';
+
+                const admittedText = card.is_admitted ? 'Admitted' : 'Pending';
+                const admittedBadgeClass = card.is_admitted ? 'bg-green-900 text-green-200 border-green-600' : 'bg-amber-900 text-amber-200 border-amber-600';
+
+                row.innerHTML = `
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium text-white break-all">${card.index_number}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-200 break-words">${card.full_name}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-300 hidden md:table-cell">${card.nic_number || 'N/A'}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-300 hidden md:table-cell">${card.expiry_date}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold border ${admittedBadgeClass}">${admittedText}</span>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium">
+                        <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                            <button onclick="handleEdit('${card.id}', '${card.full_name}', '${card.nic_number}', '${card.expiry_date}')" class="text-blue-400 hover:text-blue-300 hover:bg-blue-900 transition px-2 py-1 rounded text-xs font-medium">Edit</button>
+                            <button onclick="handleAction('${card.id}', 'delete')" class="text-red-400 hover:text-red-300 hover:bg-red-900 transition px-2 py-1 rounded text-xs font-medium">Delete</button>
+                            <button onclick="window.open('?index=${card.index_number}#download', '_blank')" class="text-green-400 hover:text-green-300 hover:bg-green-900 transition px-2 py-1 rounded text-xs font-medium">Download</button>
+                        </div>
+                        <div class="md:hidden text-xs text-gray-400 mt-1">NIC: ${card.nic_number || 'N/A'} | Exp: ${card.expiry_date}</div>
+                    </td>
+                `;
+            });
+        }
+
+        // Update manage result count
+        function updateManageResultCount() {
+            const resultCountEl = document.getElementById('manage-search-result-count');
+            const searchTerm = document.getElementById('manage-search-input').value.toLowerCase().trim();
+            const statusText = currentStatusFilter === 'all' ? 'All' : currentStatusFilter === 'pending' ? 'Pending' : 'Admitted';
+            
+            if (!searchTerm && currentStatusFilter === 'all') {
+                resultCountEl.textContent = `Showing all ${manageCardsData.length} cards`;
+            } else {
+                resultCountEl.textContent = `Showing ${filteredManageCards.length} ${statusText.toLowerCase()} card(s)${searchTerm ? ` matching "${searchTerm}"` : ''}`;
+            }
+        }
+
+        // Manage search functionality
+        function performManageSearch() {
+            applyManageFilters();
+        }
+
+        // Clear manage search
+        function clearManageSearch() {
+            document.getElementById('manage-search-input').value = '';
+            applyManageFilters();
+        }
+
+        // Setup manage search listener
+        function setupManageSearchListener() {
+            const searchInput = document.getElementById('manage-search-input');
+            if (searchInput && !searchInput.hasAttribute('data-listener-attached')) {
+                searchInput.setAttribute('data-listener-attached', 'true');
+                searchInput.addEventListener('input', performManageSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performManageSearch();
+                    }
+                });
+            }
+        }
+
+        // Old search functions (kept for compatibility but not used)
+        function performSearch() {
+            // Not used anymore - using manage search instead
+        }
+
+        function clearSearch() {
+            // Not used anymore
+        }
+
+        // Render table with data
+        function renderTable(cards) {
+            const tableBody = document.getElementById('admin-cards-table');
+            tableBody.innerHTML = '';
+
+            if (cards.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">No cards found.</td></tr>`;
+                return;
+            }
+
+            cards.forEach(card => {
+                const row = tableBody.insertRow();
+                row.className = 'hover:bg-gray-800 transition duration-150';
+
+                const admittedText = card.is_admitted ? 'Admitted' : 'Pending';
+                const admittedBadgeClass = card.is_admitted ? 'bg-green-900 text-green-200 border-green-600' : 'bg-amber-900 text-amber-200 border-amber-600';
+
+                row.innerHTML = `
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium text-white break-all">${card.index_number}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-200 break-words">${card.full_name}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-300 hidden md:table-cell">${card.expiry_date}</td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold border ${admittedBadgeClass}">${admittedText}</span>
+                    </td>
+                    <td class="px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium">
+                        <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                            <button onclick="handleEdit('${card.id}', '${card.full_name}', '${card.nic_number}', '${card.expiry_date}')" class="text-blue-400 hover:text-blue-300 hover:bg-blue-900 transition px-2 py-1 rounded text-xs font-medium">Edit</button>
+                            <button onclick="handleAction('${card.id}', 'delete')" class="text-red-400 hover:text-red-300 hover:bg-red-900 transition px-2 py-1 rounded text-xs font-medium">Delete</button>
+                            <button onclick="window.open('?index=${card.index_number}#download', '_blank')" class="text-green-400 hover:text-green-300 hover:bg-green-900 transition px-2 py-1 rounded text-xs font-medium">Download</button>
+                        </div>
+                        <div class="md:hidden text-xs text-gray-400 mt-1">Exp: ${card.expiry_date}</div>
+                    </td>
+                `;
+            });
         }
 
         // --- Utility Functions ---
@@ -299,9 +867,9 @@
             el.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
             
             if (type === 'success') {
-                el.classList.add('bg-green-900', 'text-green-300', 'glass-card');
+                el.classList.add('bg-green-900', 'bg-opacity-30', 'text-green-200', 'border-green-500', 'border-2');
             } else {
-                el.classList.add('bg-red-900', 'text-red-300', 'glass-card');
+                el.classList.add('bg-red-900', 'bg-opacity-30', 'text-red-200', 'border-red-500', 'border-2');
             }
             el.classList.remove('hidden');
             setTimeout(() => el.classList.add('hidden'), 5000);
@@ -341,38 +909,124 @@
             }
         }
 
-        // --- PDF Generation Logic ---
-        function downloadPDF() {
+        // --- Enhanced PDF Generation Logic ---
+        function downloadPDF(mode = 'download') {
             // Get the element to convert
             const input = document.querySelector('.admit-card-print');
             
-            // Temporary scale up for higher resolution capture
-            const scale = 2; 
+            if (mode === 'print') {
+                window.print();
+                return;
+            }
             
-            html2canvas(input, {
-                scale: scale,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff' // Set explicit white background for card
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/jpeg');
-                const pdf = new window.jspdf.jsPDF({
-                    orientation: 'portrait',
-                    unit: 'px',
-                    format: [input.offsetWidth * scale, input.offsetHeight * scale]
+            // Show loading indicator
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50';
+            loadingMsg.innerHTML = `
+                <div class="glass-card p-6 text-center">
+                    <svg class="animate-spin h-8 w-8 text-green-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-white">Generating PDF...</p>
+                </div>
+            `;
+            document.body.appendChild(loadingMsg);
+            
+            // Preload logo image to ensure it's ready for PDF
+            const logoImg = input.querySelector('img[src="favicon.ico.png"]');
+            if (logoImg) {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = generatePDF;
+                img.onerror = generatePDF; // Continue even if logo fails
+                img.src = logoImg.src;
+            } else {
+                generatePDF();
+            }
+
+            function generatePDF() {
+                // Temporary scale up for higher resolution capture
+                const scale = 3; // Increased for better quality
+                
+                html2canvas(input, {
+                    scale: scale,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: input.scrollWidth,
+                    windowHeight: input.scrollHeight,
+                    allowTaint: true,
+                    imageTimeout: 15000,
+                    onclone: (clonedDoc) => {
+                        // Ensure logo is visible in cloned document
+                        const clonedImg = clonedDoc.querySelector('.admit-card-print img');
+                        if (clonedImg) {
+                            clonedImg.style.display = 'block';
+                            clonedImg.style.maxWidth = '64px';
+                            clonedImg.style.maxHeight = '64px';
+                        }
+                    }
+                }).then(canvas => {
+                    loadingMsg.remove();
+                    
+                    const imgData = canvas.toDataURL('image/png', 1.0); // PNG for better quality
+                    const pdf = new window.jspdf.jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+                    
+                    // Calculate dimensions for PDF
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pdfWidth - 20; // Margin
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    // Center the image
+                    const xOffset = (pdfWidth - imgWidth) / 2;
+                    const yOffset = (pdfHeight - imgHeight) / 2;
+                    
+                    pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
+                    pdf.save(`Admission_Card_${document.getElementById('card-index').textContent}.pdf`);
+                    
+                    // Show success message
+                    showStatus('PDF downloaded successfully!', 'success');
+                }).catch(error => {
+                    loadingMsg.remove();
+                    console.error("PDF generation failed:", error);
+                    showStatus('PDF generation failed. Please try printing instead.', 'error');
                 });
-                
-                // Calculate dimensions for PDF
-                const imgWidth = pdf.internal.pageSize.getWidth();
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                
-                pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-                pdf.save(`Admission_Card_${document.getElementById('card-index').textContent}.pdf`);
-            }).catch(error => {
-                console.error("PDF generation failed:", error);
-                // Fallback to standard print if PDF generation fails
-                window.print(); 
-            });
+            }
+        }
+
+        // Share card function
+        function shareCard() {
+            const indexNumber = document.getElementById('card-index').textContent;
+            const cardUrl = `${window.location.origin}${window.location.pathname}?index=${indexNumber}#download`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Admission Card',
+                    text: `Admission Card - Index: ${indexNumber}`,
+                    url: cardUrl
+                }).catch(err => {
+                    copyToClipboard(cardUrl);
+                });
+            } else {
+                copyToClipboard(cardUrl);
+            }
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showStatus('Card link copied to clipboard!', 'success');
         }
 
 
@@ -404,63 +1058,37 @@
                 showStatus(`Failed to create card: ${error.message}`, 'error');
             } else {
                 showStatus(`Card successfully created! Index No: ${indexNumber}`);
-                loadAdminTable();
+                loadWelcomeStats();
                 
                 // Custom Modal for download confirmation
                 const confirmDownload = document.createElement('div');
-                confirmDownload.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50';
+                confirmDownload.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4';
                 confirmDownload.innerHTML = `
                     <div class="glass-card p-6 w-full max-w-sm text-center">
                         <p class="text-lg mb-4 text-white">Card created! Do you want to download the Admission Card (Index: ${indexNumber})?</p>
-                        <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mr-3 transition" onclick="window.open('?index=${indexNumber}#download', '_blank'); this.closest('div.fixed').remove();">Yes, Download</button>
-                        <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition" onclick="this.closest('div.fixed').remove();">No, Thanks</button>
+                        <div class="flex gap-3 justify-center">
+                            <button class="btn-primary font-bold py-2 px-4 rounded-lg transition" onclick="window.open('?index=${indexNumber}#download', '_blank'); this.closest('div.fixed').remove();">Yes, Download</button>
+                            <button class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition" onclick="this.closest('div.fixed').remove();">No, Thanks</button>
+                        </div>
                     </div>`;
                 document.body.appendChild(confirmDownload);
             }
         });
 
+        // Old admin table functions - not used anymore but kept for compatibility
         async function loadAdminTable() {
-            const tableBody = document.getElementById('admin-cards-table');
-            const spinner = document.getElementById('loading-spinner');
-            spinner.classList.remove('hidden');
-            tableBody.innerHTML = '';
+            // This is now handled by loadManageTable
+            loadManageTable();
+        }
 
-            const { data, error } = await supabaseClient
-                .from('admission_cards')
-                .select('*')
-                .order('created_at', { ascending: false });
+        function setupSearchListener() {
+            // This is now handled by setupManageSearchListener
+            setupManageSearchListener();
+        }
 
-            spinner.classList.add('hidden');
-
-            if (error) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">Error loading data: ${error.message}</td></tr>`;
-                return;
-            }
-
-            if (data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No admission cards found.</td></tr>`;
-                return;
-            }
-
-            data.forEach(card => {
-                const row = tableBody.insertRow();
-                row.className = 'hover:bg-gray-800 transition duration-150';
-
-                const admittedText = card.is_admitted ? 'Admitted' : 'Pending';
-                const admittedClass = card.is_admitted ? 'text-green-400' : 'text-yellow-400';
-
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${card.index_number}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${card.full_name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${card.expiry_date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm ${admittedClass}">${admittedText}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="handleEdit('${card.id}', '${card.full_name}', '${card.nic_number}', '${card.expiry_date}')" class="text-indigo-400 hover:text-indigo-200 mr-3 transition">Edit</button>
-                        <button onclick="handleAction('${card.id}', 'delete')" class="text-red-400 hover:text-red-200 transition">Delete</button>
-                        <button onclick="window.open('?index=${card.index_number}#download', '_blank')" class="text-green-400 hover:text-green-200 ml-3 transition">Download</button>
-                    </td>
-                `;
-            });
+        function renderTable(cards) {
+            // This is now handled by renderManageTable
+            renderManageTable(cards);
         }
 
         function handleEdit(id, name, nic, expiry) {
@@ -525,7 +1153,8 @@
                     showStatus(`Failed to delete card: ${error.message}`, 'error');
                 } else {
                     showStatus('Card successfully deleted.');
-                    loadAdminTable();
+                    loadManageTable();
+                    loadWelcomeStats();
                 }
 
             } else {
@@ -543,7 +1172,8 @@
                     showStatus(`Failed to save changes: ${error.message}`, 'error');
                 } else {
                     showStatus('Changes saved successfully.');
-                    loadAdminTable();
+                    loadManageTable();
+                    loadWelcomeStats();
                 }
             }
         });
@@ -571,9 +1201,12 @@
             container.innerHTML = `
                  <div class="admit-card-print">
                     <div class="admit-card-header flex justify-between items-center mb-6">
-                        <div>
-                            <h3 class="text-3xl font-extrabold text-[#10b981]">OFFICIAL ADMISSION CARD</h3>
-                            <p class="text-sm text-gray-500">Please present this card for verification.</p>
+                        <div class="flex items-center gap-4">
+                            <img src="favicon.ico.png" alt="DE Education Logo" class="w-16 h-16 object-contain" onerror="this.style.display='none'">
+                            <div>
+                                <h3 class="text-3xl font-extrabold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">OFFICIAL ADMISSION CARD</h3>
+                                <p class="text-sm text-gray-500">Please present this card for verification.</p>
+                            </div>
                         </div>
                         <div id="qr-code-display" class="w-24 h-24 border-2 border-gray-200 p-1 flex items-center justify-center bg-white">
                             <!-- QR Code will be drawn here -->
@@ -581,9 +1214,9 @@
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 text-gray-800">
-                        <div class="p-3 bg-gray-50 rounded-lg">
+                        <div class="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                             <span class="font-medium text-gray-600">Index No:</span>
-                            <span id="card-index" class="font-bold text-xl text-red-600 block"></span>
+                            <span id="card-index" class="font-bold text-xl text-green-600 block"></span>
                         </div>
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <span class="font-medium text-gray-600">Name:</span>
@@ -610,7 +1243,7 @@
                 container.innerHTML = `
                     <div class="text-center p-8 glass-card mt-8">
                         <p class="text-red-400 font-bold text-xl">Admission Card (Index: ${indexNumber}) not found.</p>
-                        <button onclick="renderView('admin')" class="mt-4 text-green-400 hover:text-green-200 transition">Go to Admin Panel</button>
+                        <button onclick="renderView('admin')" class="mt-4 btn-primary px-4 py-2 rounded-lg transition">Go to Admin Panel</button>
                     </div>`;
                 return;
             }
@@ -638,6 +1271,240 @@
             }, 100);
         }
 
+        // Download Cards View Functions
+        let downloadCardsData = [];
+        let filteredDownloadCards = [];
+        let currentViewType = 'list';
+
+        // Set view type
+        function setViewType(type) {
+            currentViewType = type;
+            const container = document.getElementById('download-cards-container');
+            container.setAttribute('data-view-type', type);
+            
+            // Update button states
+            document.querySelectorAll('.view-type-btn').forEach(btn => {
+                btn.classList.remove('bg-green-700');
+                btn.classList.add('bg-gray-700');
+            });
+            document.getElementById(`view-${type}-btn`).classList.remove('bg-gray-700');
+            document.getElementById(`view-${type}-btn`).classList.add('bg-green-700');
+            
+            renderDownloadCards(filteredDownloadCards);
+        }
+
+        // Load download cards
+        async function loadDownloadCards() {
+            const container = document.getElementById('download-cards-container');
+            const spinner = document.getElementById('download-loading-spinner');
+            
+            spinner.classList.remove('hidden');
+            container.innerHTML = '';
+
+            const { data, error } = await supabaseClient
+                .from('admission_cards')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            spinner.classList.add('hidden');
+
+            if (error) {
+                container.innerHTML = `<div class="glass-card p-6 text-center text-red-400">Error loading cards: ${error.message}</div>`;
+                return;
+            }
+
+            downloadCardsData = data || [];
+            filteredDownloadCards = downloadCardsData;
+            
+            document.getElementById('download-search-result-count').textContent = `Showing all ${downloadCardsData.length} cards`;
+            renderDownloadCards(filteredDownloadCards);
+            
+            // Setup search listener
+            setupDownloadSearchListener();
+        }
+
+        // Render download cards based on view type
+        function renderDownloadCards(cards) {
+            const container = document.getElementById('download-cards-container');
+            container.innerHTML = '';
+
+            if (cards.length === 0) {
+                container.innerHTML = `<div class="glass-card p-8 text-center text-gray-400">No cards found.</div>`;
+                return;
+            }
+
+            cards.forEach(card => {
+                if (currentViewType === 'list') {
+                    container.innerHTML += createListViewCard(card);
+                } else if (currentViewType === 'medium') {
+                    container.innerHTML += createMediumViewCard(card);
+                } else {
+                    container.innerHTML += createLargeViewCard(card);
+                }
+            });
+        }
+
+        // Create list view card
+        function createListViewCard(card) {
+            const statusClass = card.is_admitted ? 'bg-green-900 text-green-200' : 'bg-amber-900 text-amber-200';
+            const statusText = card.is_admitted ? 'Admitted' : 'Pending';
+            
+            return `
+                <div class="card-item-list flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex-1 min-w-[200px]">
+                        <h3 class="text-lg font-bold text-white mb-1">${card.full_name}</h3>
+                        <p class="text-green-300 text-sm">Index: <span class="font-mono">${card.index_number}</span></p>
+                        <p class="text-gray-400 text-sm">NIC: ${card.nic_number || 'N/A'} | Expiry: ${card.expiry_date}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+                        <button onclick="downloadCardPDF('${card.index_number}')" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">
+                            Download PDF
+                        </button>
+                        <button onclick="viewCard('${card.index_number}')" class="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                            View
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create medium view card
+        function createMediumViewCard(card) {
+            const statusClass = card.is_admitted ? 'bg-green-900 text-green-200' : 'bg-amber-900 text-amber-200';
+            const statusText = card.is_admitted ? 'Admitted' : 'Pending';
+            
+            return `
+                <div class="card-item-medium">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-1">${card.full_name}</h3>
+                            <p class="text-green-300 text-sm font-mono">${card.index_number}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="space-y-2 mb-4 text-sm text-gray-300">
+                        <p><span class="text-green-200">NIC:</span> ${card.nic_number || 'N/A'}</p>
+                        <p><span class="text-green-200">Expiry:</span> ${card.expiry_date}</p>
+                        ${card.is_admitted && card.admitted_at ? `<p><span class="text-green-200">Admitted:</span> ${new Date(card.admitted_at).toLocaleString()}</p>` : ''}
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="downloadCardPDF('${card.index_number}')" class="flex-1 btn-primary px-4 py-2 rounded-lg text-sm font-semibold">
+                            Download PDF
+                        </button>
+                        <button onclick="viewCard('${card.index_number}')" class="flex-1 bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                            View
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create large view card
+        function createLargeViewCard(card) {
+            const statusClass = card.is_admitted ? 'bg-green-900 text-green-200' : 'bg-amber-900 text-amber-200';
+            const statusText = card.is_admitted ? 'Admitted' : 'Pending';
+            
+            return `
+                <div class="card-item-large">
+                    <div class="border-b border-gray-700 pb-3 mb-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-2">${card.full_name}</h3>
+                                <p class="text-green-300 text-base font-mono">${card.index_number}</p>
+                            </div>
+                            <span class="px-4 py-2 rounded-full text-sm font-semibold ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                        <div>
+                            <p class="text-green-200 font-semibold mb-1">NIC Number</p>
+                            <p class="text-gray-300">${card.nic_number || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-green-200 font-semibold mb-1">Expiry Date</p>
+                            <p class="text-gray-300">${card.expiry_date}</p>
+                        </div>
+                        ${card.is_admitted && card.admitted_at ? `
+                        <div class="col-span-2">
+                            <p class="text-green-200 font-semibold mb-1">Admitted At</p>
+                            <p class="text-gray-300">${new Date(card.admitted_at).toLocaleString()}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="downloadCardPDF('${card.index_number}')" class="flex-1 btn-primary px-6 py-3 rounded-lg font-semibold">
+                            <svg class="w-5 h-5 inline mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download PDF
+                        </button>
+                        <button onclick="viewCard('${card.index_number}')" class="flex-1 bg-blue-700 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold">
+                            <svg class="w-5 h-5 inline mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Download card PDF
+        function downloadCardPDF(indexNumber) {
+            window.open(`?index=${indexNumber}#download`, '_blank');
+        }
+
+        // View card details
+        function viewCard(indexNumber) {
+            renderView('download');
+            loadDownloadCard(indexNumber);
+        }
+
+        // Download search functionality
+        function performDownloadSearch() {
+            const searchTerm = document.getElementById('download-search-input').value.toLowerCase().trim();
+            const resultCountEl = document.getElementById('download-search-result-count');
+            
+            if (!searchTerm) {
+                filteredDownloadCards = downloadCardsData;
+                renderDownloadCards(filteredDownloadCards);
+                resultCountEl.textContent = `Showing all ${downloadCardsData.length} cards`;
+                return;
+            }
+
+            filteredDownloadCards = downloadCardsData.filter(card => {
+                return card.index_number.toLowerCase().includes(searchTerm) ||
+                       card.full_name.toLowerCase().includes(searchTerm) ||
+                       (card.nic_number && card.nic_number.toLowerCase().includes(searchTerm));
+            });
+
+            renderDownloadCards(filteredDownloadCards);
+            resultCountEl.textContent = `Found ${filteredDownloadCards.length} card(s) matching "${searchTerm}"`;
+        }
+
+        // Setup download search listener
+        function setupDownloadSearchListener() {
+            const searchInput = document.getElementById('download-search-input');
+            if (searchInput && !searchInput.hasAttribute('data-listener-attached')) {
+                searchInput.setAttribute('data-listener-attached', 'true');
+                searchInput.addEventListener('input', performDownloadSearch);
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performDownloadSearch();
+                    }
+                });
+            }
+        }
+
+        // Enhanced PDF download function
+        function downloadCardPDFEnhanced(indexNumber) {
+            // This will be called from the enhanced card view
+            downloadCardPDF(indexNumber);
+        }
+
+
         // --- Initial Load & Routing ---
         window.onload = function() {
             const hash = window.location.hash.substring(1);
@@ -647,18 +1514,35 @@
             if (indexFromUrl && hash === 'download') {
                 renderView('download');
                 loadDownloadCard(indexFromUrl);
+            } else if (hash === 'create') {
+                renderView('create');
+            } else if (hash === 'manage') {
+                renderView('manage');
+            } else if (hash === 'admin' || hash === 'dashboard') {
+                showDashboard();
+            } else if (hash === 'download-cards') {
+                renderView('download-cards');
             } else {
-                renderView('admin');
+                // Show welcome page first
+                showWelcome();
             }
             
             window.addEventListener('popstate', () => {
-                const newHash = window.location.hash.substring(1) || 'admin';
+                const newHash = window.location.hash.substring(1);
                 const newIndex = new URLSearchParams(window.location.search).get('index');
                 if (newHash === 'download' && newIndex) {
                     renderView('download');
                     loadDownloadCard(newIndex);
+                } else if (newHash === 'create') {
+                    renderView('create');
+                } else if (newHash === 'manage') {
+                    renderView('manage');
+                } else if (newHash === 'admin' || newHash === 'dashboard') {
+                    showDashboard();
+                } else if (newHash === 'download-cards') {
+                    renderView('download-cards');
                 } else {
-                    renderView(newHash);
+                    showWelcome();
                 }
             });
         };

@@ -4,134 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admission Confirmation (Scan)</title>
-    <link rel="icon" type="image/x-icon" href="https://dilnuka13.github.io/AL/favicon.ico">
-    <!-- Tailwind CSS CDN -->
+    <link rel="icon" type="image/png" href="favicon.ico.png">
+    <link rel="apple-touch-icon" href="favicon.ico.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         
-        /* Dark Green/Teal Background Gradient */
+        /* DE Education.lk Dark Mode - Green Theme */
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #164a3e 100%);
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
             min-height: 100vh;
-            color: #e5e5e5; /* Light text for dark background */
+            color: #e5e5e5;
             transition: background-color 0.5s ease;
+            padding: 0;
         }
         
-        /* Glassmorphism Card Style */
+        /* Dark Card Style - Green Theme */
         .glass-card {
-            background: rgba(4, 98, 48, 0.2); /* Dark Green with Transparency */
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            border-radius: 16px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         .glass-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+            border-color: rgba(34, 197, 94, 0.4);
         }
 
-        /* Button Animation/Aesthetics */
+        /* Modern Button Style - Green Gradient */
         .btn-primary {
-            background: #10b981; /* Teal */
-            color: #0f172a;
-            font-weight: 700;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            font-weight: 600;
             transition: all 0.3s ease;
+            border: none;
         }
         .btn-primary:hover {
-            background: #059669;
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.4), 0 4px 6px -2px rgba(4, 120, 87, 0.4);
         }
         
-        /* Input/Form styling for dark mode */
+        /* Input/Form styling - Dark theme */
         input[type="text"], input[type="date"] {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
             color: #ffffff;
+            transition: all 0.3s ease;
         }
         input[type="text"]:focus, input[type="date"]:focus {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(31, 41, 55, 1);
             border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            outline: none;
         }
 
         /* Scanner specific styles */
         #reader {
-            border: 2px solid #10b981 !important;
+            border: 3px solid #10b981 !important;
             border-radius: 12px;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(31, 41, 55, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .glass-card {
+                border-radius: 12px;
+            }
+            button {
+                min-height: 44px; /* Better touch target */
+                touch-action: manipulation;
+            }
+            #reader {
+                max-width: 100% !important;
+            }
         }
 
-        /* Status message styles */
+        /* Status message styles - Dark theme */
         .status-success {
             background: rgba(16, 185, 129, 0.2);
             color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 2px solid #10b981;
         }
         .status-error {
             background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 2px solid #ef4444;
         }
         .status-info {
-            background: rgba(245, 158, 11, 0.2);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 2px solid #3b82f6;
+        }
+
+        /* Modal specific styles - Dark theme */
+        .modal-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%);
+            color: #10b981;
+            border: 2px solid #10b981;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        .modal-error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
+            color: #ef4444;
+            border: 2px solid #ef4444;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        .modal-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.3) 100%);
+            color: #fbbf24;
+            border: 2px solid #f59e0b;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
         }
     </style>
 
-    <!-- Supabase, QR Scanner CDNs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="p-4 md:p-10">
 
     <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <header class="mb-8 p-6 rounded-lg glass-card flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-white">Record Admission</h1>
-                <p class="text-gray-300 mt-2">Scan QR Code or Enter Index Number</p>
+        <header class="mb-6 md:mb-8 p-4 md:p-6 rounded-lg glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center">
+                <img src="favicon.ico.png" alt="DE Education Logo" class="w-12 h-12 mr-4 rounded-lg" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-white">Record Admission</h1>
+                    <p class="text-green-200 mt-2 text-sm md:text-base">Scan QR Code or Enter Index Number</p>
+                </div>
             </div>
             <nav>
-                <a href="index.html" class="btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg">
+                <a href="index.html" class="btn-primary font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-lg text-sm md:text-base w-full md:w-auto block md:inline-block text-center">
                     Dashboard
                 </a>
             </nav>
         </header>
 
-        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- QR Scanning Section -->
-            <div class="glass-card p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Scan QR Code</h2>
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+            <div class="glass-card p-4 md:p-6">
+                <h2 class="text-xl md:text-2xl font-semibold mb-4 text-white text-center">Scan QR Code</h2>
                 <div id="reader" class="w-full max-w-sm mx-auto rounded-lg overflow-hidden mb-4"></div>
-                <p class="text-center text-gray-300 text-sm">Point your device camera here</p>
+                <p class="text-center text-green-200 text-xs md:text-sm">Point your device camera here</p>
                 
-                <div class="text-center mt-6">
-                    <button onclick="refreshScanner()" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-xl">
-                        Restart
+                <div class="text-center mt-4 md:mt-6">
+                    <button onclick="stopScanner()" id="restart-btn" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-xl w-full md:w-auto text-sm md:text-base min-h-[44px]">
+                        <svg class="w-5 h-5 inline mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Restart Scanner
                     </button>
                 </div>
             </div>
 
-            <!-- Manual Entry Section -->
-            <div class="glass-card p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Enter Index Number</h2>
+            <div class="glass-card p-4 md:p-6">
+                <h2 class="text-xl md:text-2xl font-semibold mb-4 text-white text-center">Enter Index Number</h2>
                 
                 <div class="space-y-4">
                     <div>
-                        <label for="admit-index-input" class="block text-sm font-medium text-gray-300 mb-2">Index Number</label>
+                        <label for="admit-index-input" class="block text-sm font-medium text-green-200 mb-2">Index Number</label>
                         <input type="text" id="admit-index-input" placeholder="ENT-XXXXXX" 
-                               class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400">
+                               class="w-full p-3 border rounded-lg focus:ring-green-400 focus:border-green-400 text-base bg-gray-800 text-white border-gray-600">
                     </div>
                     
-                    <button id="admit-check-btn" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-xl transition duration-300">
+                    <button id="admit-check-btn" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-xl transition duration-300 text-base min-h-[44px]">
                         Confirm Admission
                     </button>
                 </div>
@@ -140,32 +185,40 @@
             </div>
         </main>
 
-        <!-- Instructions Section -->
-        <div class="glass-card p-6 mt-8">
-            <h3 class="text-xl font-semibold mb-4 text-white text-center">Instructions</h3>
+        <div class="glass-card p-4 md:p-6 mt-6 md:mt-8">
+            <h3 class="text-lg md:text-xl font-semibold mb-4 text-white text-center">Instructions</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div class="p-4">
-                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span class="text-white font-bold">1</span>
+                <div class="p-3 md:p-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white font-bold text-sm md:text-base">1</span>
                     </div>
-                    <p class="text-gray-300">Scan QR Code or enter Index Number</p>
+                    <p class="text-green-200 text-sm md:text-base">Scan QR Code or enter Index Number</p>
                 </div>
-                <div class="p-4">
-                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span class="text-white font-bold">2</span>
+                <div class="p-3 md:p-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white font-bold text-sm md:text-base">2</span>
                     </div>
-                    <p class="text-gray-300">Information is checked automatically</p>
+                    <p class="text-green-200 text-sm md:text-base">Information is checked automatically</p>
                 </div>
-                <div class="p-4">
-                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span class="text-white font-bold">3</span>
+                <div class="p-3 md:p-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="text-white font-bold text-sm md:text-base">3</span>
                     </div>
-                    <p class="text-gray-300">Admission is successfully recorded</p>
+                    <p class="text-green-200 text-sm md:text-base">Admission is successfully recorded</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="status-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50 p-4">
+        <div id="modal-content" class="glass-card p-4 md:p-6 w-full max-w-sm text-center transform transition-all scale-100 duration-300 max-h-[90vh] overflow-y-auto">
+            <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-white"></h3>
+            <p id="modal-message" class="text-base md:text-lg mb-6 break-words text-gray-200 whitespace-pre-line"></p>
+            <button onclick="closeModal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 text-base min-h-[44px]">
+                OK / Scan Next
+            </button>
+        </div>
+    </div>
     <script>
         // --- Supabase Config and Initialization ---
         const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co';
@@ -174,112 +227,218 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let html5QrCode = null;
+        let isProcessing = false; // Flag to prevent multiple concurrent processing
 
         // --- Utility Functions ---
 
-        // Show admission status message
-        function showAdmitStatus(message, type = 'success') {
-            const statusEl = document.getElementById('admit-status-message');
-            statusEl.textContent = message;
-            statusEl.className = `mt-6 p-4 rounded-lg font-semibold text-center`;
-            statusEl.classList.remove('hidden', 'status-success', 'status-error', 'status-info');
-            
+        // Show admission status pop-up (replaces the old showAdmitStatus)
+        function showModal(title, message, type = 'success') {
+            const modal = document.getElementById('status-modal');
+            const content = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+
+            // Reset classes
+            content.classList.remove('modal-success', 'modal-error', 'modal-warning');
+            content.classList.add('glass-card'); // Keep glass-card style
+
+            // Set content and specific class
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
             if (type === 'success') {
-                statusEl.classList.add('status-success');
+                content.classList.add('modal-success');
+                messageEl.classList.add('text-green-300');
+                messageEl.classList.remove('text-red-300', 'text-yellow-300');
             } else if (type === 'error') {
-                statusEl.classList.add('status-error');
-            } else { // info/loading
-                statusEl.classList.add('status-info');
+                content.classList.add('modal-error');
+                messageEl.classList.add('text-red-300');
+                messageEl.classList.remove('text-green-300', 'text-yellow-300');
+            } else { // warning/info
+                content.classList.add('modal-warning');
+                messageEl.classList.add('text-yellow-300');
+                messageEl.classList.remove('text-green-300', 'text-red-300');
             }
-            statusEl.classList.remove('hidden');
-            setTimeout(() => statusEl.classList.add('hidden'), 5000);
+
+            modal.classList.remove('hidden');
         }
 
-        // Restart scanner and page
-        function refreshScanner() {
-            // Stop the scanner
-            if (html5QrCode && html5QrCode.getState() !== 0) {
-                html5QrCode.stop().catch(err => console.error("Could not stop scanner on refresh:", err));
-            }
-            
-            // Clear status message
-            document.getElementById('admit-status-message').classList.add('hidden');
-            
+        // Close the custom modal
+        function closeModal() {
+            document.getElementById('status-modal').classList.add('hidden');
             // Clear manual input
             document.getElementById('admit-index-input').value = '';
-
-            // Restart scanner
-            setTimeout(initScanner, 100); 
+            isProcessing = false; // Allow new processing
             
-            showAdmitStatus('System restarted.', 'info');
+            // Restart scanner when modal is closed (if not already running)
+            if (html5QrCode) {
+                const currentState = html5QrCode.getState();
+                if (currentState === 0 || currentState === 2) {
+                    // Scanner is stopped, restart it
+                    setTimeout(() => {
+                        initScanner();
+                    }, 300);
+                }
+            } else {
+                // No scanner instance, initialize it
+                setTimeout(() => {
+                    initScanner();
+                }, 300);
+            }
+        }
+
+        // Stop/Restart scanner and page (Fixed refresh button functionality)
+        function stopScanner() {
+            // Clear manual input
+            document.getElementById('admit-index-input').value = '';
+            closeModal(); // Ensure modal is closed
+            isProcessing = false; // Reset processing flag
+
+            // Stop the scanner properly
+            if (html5QrCode) {
+                const currentState = html5QrCode.getState();
+                if (currentState !== 0 && currentState !== 2) { // Not stopped and not stopped permanently
+                    html5QrCode.stop().then(() => {
+                        // Clear the reader div
+                        document.getElementById('reader').innerHTML = '';
+                        // Restart scanner after a brief delay
+                        setTimeout(() => {
+                            initScanner();
+                        }, 300);
+                    }).catch(err => {
+                        console.error("Could not stop scanner:", err);
+                        // Clear the reader div even if stop fails
+                        document.getElementById('reader').innerHTML = '';
+                        // Try to restart anyway
+                        setTimeout(() => {
+                            initScanner();
+                        }, 300);
+                    });
+                } else {
+                    // Scanner is already stopped, just restart
+                    document.getElementById('reader').innerHTML = '';
+                    setTimeout(() => {
+                        initScanner();
+                    }, 300);
+                }
+            } else {
+                // No scanner instance, initialize it
+                initScanner();
+            }
         }
 
         // Initialize QR Scanner
         function initScanner() {
             const qrCodeRegionId = "reader";
             
-            if (html5QrCode && html5QrCode.getState() !== 0) {
-                // Stop the scanner if it's already running
-                html5QrCode.stop().catch(err => console.error("Could not stop previous scanner:", err));
+            // Stop the scanner if it's already running
+            if (html5QrCode) {
+                const currentState = html5QrCode.getState();
+                if (currentState !== 0 && currentState !== 2) {
+                    html5QrCode.stop().catch(err => {
+                        console.error("Could not stop previous scanner:", err);
+                    });
+                }
             }
+            
+            // Clear previous content in reader div
+            document.getElementById(qrCodeRegionId).innerHTML = '';
 
+            // Create new scanner instance
             html5QrCode = new Html5Qrcode(qrCodeRegionId);
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            // Responsive QR box size based on screen width
+            const isMobile = window.innerWidth < 640;
+            const qrBoxSize = isMobile ? 200 : 250;
+            const config = { 
+                fps: 10, 
+                qrbox: { width: qrBoxSize, height: qrBoxSize },
+                aspectRatio: 1.0
+            };
 
             html5QrCode.start(
                 { facingMode: "environment" }, // Use back camera
                 config,
                 (decodedText, decodedResult) => {
                     // When QR code is successfully scanned
-                    html5QrCode.stop(); // Stop the scanner
-                    processAdmission(decodedText);
-                    // Restarting scanner after success (to scan another person)
-                    setTimeout(initScanner, 3000); 
+                    if (!isProcessing) {
+                        isProcessing = true;
+                        // Stop the scanner temporarily
+                        html5QrCode.stop().catch(err => console.error("Error stopping scanner:", err));
+                        processAdmission(decodedText);
+                    }
                 },
                 (errorMessage) => {
-                    // Scanning errors
+                    // Scanning errors are generally ignored to keep the flow smooth
+                    // Only log if it's a significant error
+                    if (errorMessage && !errorMessage.includes('NotFoundException')) {
+                        // console.log("Scanning:", errorMessage);
+                    }
                 }
             ).catch((err) => {
                 console.error("Camera access error:", err);
                 let errorMessage = "Could not start camera. (HTTPS may be required)";
                 
-                // Securely retrieve the error message
                 const errMsg = err && err.message ? err.message : '';
 
-                // Show specific message for NotAllowedError
                 if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
                     errorMessage = "Permission to access camera is denied. Please check your browser's Camera Permissions and try again.";
+                } else if (err && (err.name === 'NotFoundError' || errMsg.includes('NotFoundError'))) {
+                    errorMessage = "No camera found. Please connect a camera device.";
                 }
 
-                document.getElementById(qrCodeRegionId).innerHTML = `<p class="p-4 text-center text-red-400">${errorMessage}</p>`;
+                document.getElementById(qrCodeRegionId).innerHTML = `<p class="p-4 text-center text-red-400 text-sm">${errorMessage}</p>`;
             });
         }
 
         // Admission confirmation process by index number
         async function processAdmission(indexNumber) {
             indexNumber = indexNumber.trim();
-            showAdmitStatus('Checking confirmation...', 'info');
+
+            if (isProcessing) return; // Prevent double submission
+            isProcessing = true;
+
+            showModal('Processing...', `Please wait...\n\nChecking details for Index: ${indexNumber}`, 'info');
+            
+            // Note: Scanner will be restarted after processing completes 
 
             // 1. Retrieving information
             const { data: currentData, error: readError } = await supabaseClient
                 .from('admission_cards')
-                .select('id, full_name, is_admitted, expiry_date')
+                .select('id, full_name, is_admitted, expiry_date, admitted_at')
                 .eq('index_number', indexNumber)
                 .single();
 
             if (readError || !currentData) {
-                showAdmitStatus(`Index Number (${indexNumber}) is invalid!`, 'error');
+                showModal('Card Not Found', `✗ Index Number "${indexNumber}" not found in the system.\n\nPlease check the index number and try again.`, 'error');
+                isProcessing = false;
+                // Restart scanner after a delay to allow modal to show
+                setTimeout(() => {
+                    initScanner();
+                }, 500);
                 return;
             }
 
+            // Check if already admitted (Warning case)
             if (currentData.is_admitted) {
-                showAdmitStatus(`${currentData.full_name} is already admitted.`, 'error');
+                const admittedTime = currentData.admitted_at ? new Date(currentData.admitted_at).toLocaleString() : 'Previously';
+                showModal('Already Admitted', `⚠ ${currentData.full_name} has already been admitted.\n\nAdmitted at: ${admittedTime}`, 'warning');
+                isProcessing = false;
+                // Restart scanner after a delay
+                setTimeout(() => {
+                    initScanner();
+                }, 500);
                 return;
             }
 
-            // Checking expiry date
+            // Checking expiry date (Error case)
             if (new Date(currentData.expiry_date) < new Date()) {
-                showAdmitStatus(`Card has expired (${currentData.expiry_date})!`, 'error');
+                showModal('Card Expired', `✗ Card for ${currentData.full_name} has expired.\n\nExpiry Date: ${currentData.expiry_date}\n\nPlease contact administrator.`, 'error');
+                isProcessing = false;
+                // Restart scanner after a delay
+                setTimeout(() => {
+                    initScanner();
+                }, 500);
                 return;
             }
 
@@ -290,21 +449,27 @@
                 .eq('id', currentData.id);
 
             if (updateError) {
-                showAdmitStatus(`Failed to record admission: ${updateError.message}`, 'error');
+                showModal('Admission Failed', `Failed to record admission for ${currentData.full_name}.\nError: ${updateError.message}`, 'error');
+                isProcessing = false;
+                // Restart scanner after a delay
+                setTimeout(() => {
+                    initScanner();
+                }, 500);
             } else {
-                showAdmitStatus(`${currentData.full_name} successfully admitted! (${indexNumber})`, 'success');
-                // After success, clearing the admission number
-                document.getElementById('admit-index-input').value = '';
+                showModal('Admission Successful!', `✓ Admission recorded successfully!\n\nName: ${currentData.full_name}\nIndex: ${indexNumber}\nTime: ${new Date().toLocaleString()}`, 'success');
+                // isProcessing is cleared by closeModal()
+                // Scanner will restart when modal is closed
             }
         }
         
         // Manual input button event
         document.getElementById('admit-check-btn').addEventListener('click', () => {
+            if (isProcessing) return;
             const indexNumber = document.getElementById('admit-index-input').value.trim();
             if (indexNumber) {
                 processAdmission(indexNumber);
             } else {
-                showAdmitStatus('Please enter an Index Number.', 'error');
+                showModal('Input Required', 'Please enter an Index Number.', 'error');
             }
         });
 

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+            color: #e5e5e5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        #reader {
+            width: 100%;
+            max-width: 400px;
+            border: 3px solid #10b981 !important;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.8);
+        }
+        #status-text {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .status-ready {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .status-processing {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            animation: pulse 1.5s infinite;
+        }
+        .status-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-2xl font-bold text-white mb-4">Phone Scanner</h1>
+    <p class="text-green-200 mb-6 text-center">Point your camera at a student's QR code.</p>
+    <div id="reader"></div>
+    <div id="status-text" class="status-ready">Connecting...</div>
+
+    <script>
+        // --- Supabase Config (COPY from scan_admit.html) ---
+        const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyYnZpdXBscG1wd3Btb213a3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODg3NzMsImV4cCI6MjA3Nzg2NDc3M30.WaHCepK7F4_6hTGfrdwgo75qbPqaN9f2xzlxS9etCks';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let html5QrCode;
+        let isPhoneProcessing = false;
+        let sessionId = '';
+        const statusText = document.getElementById('status-text');
+
+        // 1. Get Session ID from URL
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            sessionId = urlParams.get('session_id');
+            if (!sessionId) {
+                statusText.textContent = 'Error: No Session ID. Please re-scan from computer.';
+                statusText.className = 'status-error';
+                return;
+            }
+            
+            initPhoneScanner();
+            listenForComputerReady(); // Start listening for "processed" status
+        };
+
+        // 2. Initialize Phone Scanner
+        function initPhoneScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            
+            const qrBoxSize = 250;
+            const config = { 
+                fps: 10, 
+                qrbox: { width: qrBoxSize, height: qrBoxSize },
+                aspectRatio: 1.0
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                async (decodedText, decodedResult) => {
+                    if (isPhoneProcessing) return; // Don't scan twice
+                    
+                    isPhoneProcessing = true;
+                    statusText.textContent = 'Sending to computer...';
+                    statusText.className = 'status-processing';
+                    
+                    try {
+                        html5QrCode.pause();
+                        
+                        // Send scanned data to Supabase
+                        const { error } = await supabaseClient
+                            .from('scan_channels')
+                            .update({ scanned_data: decodedText, status: 'scanned' })
+                            .eq('id', sessionId);
+                            
+                        if (error) {
+                            throw error;
+                        }
+                        // Now we wait... listenForComputerReady() will handle the reset
+                        
+                    } catch (error) {
+                        console.error("Error sending scan:", error);
+                        statusText.textContent = 'Error sending. Try again.';
+                        statusText.className = 'status-error';
+                        isPhoneProcessing = false;
+                        html5QrCode.resume();
+                    }
+                },
+                (errorMessage) => { /* Ignore scanning errors */ }
+            ).catch((err) => {
+                console.error("Camera access error:", err);
+                statusText.textContent = 'Camera Error. Please check permissions.';
+                statusText.className = 'status-error';
+            });
+        }
+
+        // 3. Listen for Computer's "Processed" Signal
+        function listenForComputerReady() {
+            const channel = supabaseClient.channel('phone-listener-' + sessionId);
+            
+            channel.on('postgres_changes', 
+                { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'scan_channels', 
+                    filter: `id=eq.${sessionId}` 
+                }, 
+                payload => {
+                    console.log("Received update from computer:", payload.new);
+                    // When computer resets status to 'waiting', we are ready to scan again
+                    if (payload.new.status === 'waiting' && isPhoneProcessing) {
+                        statusText.textContent = 'Ready for next scan...';
+                        statusText.className = 'status-ready';
+                        isPhoneProcessing = false;
+                        if (html5QrCode.getState() === 2) { // 2 = PAUSED
+                            html5QrCode.resume();
+                        }
+                    } else if (payload.new.status === 'waiting') {
+                        statusText.textContent = 'Ready for next scan...';
+                        statusText.className = 'status-ready';
+                    }
+                }
+            ).subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Phone is listening to computer.');
+                    statusText.textContent = 'Ready for next scan...';
+                    statusText.className = 'status-ready';
+                } else {
+                    statusText.textContent = 'Connection Error.';
+                    statusText.className = 'status-error';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

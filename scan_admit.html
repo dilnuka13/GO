@@ -71,7 +71,7 @@
             overflow: hidden;
             background: rgba(31, 41, 55, 0.8);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            min-height: 250px; /* Ensure space for error message */
+            min-height: 250px; /* Ensure space for camera/error message */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -134,9 +134,38 @@
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
+        
+        /* Loading State Style */
+        .reader-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 250px;
+            background: rgba(31, 41, 55, 0.8);
+            color: #34d399; /* Green text for loading */
+        }
     </style>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase AUTH Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // Supabase Imports
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // Global Firebase and Supabase instances
+        window.initializeApp = initializeApp;
+        window.getAuth = getAuth;
+        window.signInAnonymously = signInAnonymously;
+        window.createClient = createClient;
+    </script>
+
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="p-4 md:p-10">
@@ -226,29 +255,68 @@
         </div>
     </div>
     <script>
-        // --- Supabase Config and Initialization ---
-        const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyYnZpdXBscG1wd3Btb213a3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODg3NzMsImV4cCI6MjA3Nzg2NDc3M30.WaHCepK7F4_6hTGfrdwgo75qbPqaN9f2xzlxS9etCks';
-
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // --- Firebase Config and Initialization (Auth Only) ---
+        const FIREBASE_CONFIG_BASE = {
+            apiKey: "AIzaSyD6yXDHsOaqVplfhsXZV8nWvMuioDulwYg",
+            authDomain: "edu-login-4d05f.firebaseapp.com",
+            projectId: "edu-login-4d05f",
+        };
         
+        // Use global variables if available
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : FIREBASE_CONFIG_BASE;
+        
+        let app, auth;
         let html5QrCode = null;
-        let isProcessing = false; // Flag to prevent multiple concurrent processing
+        let isProcessing = false;
 
-        // --- Utility Functions ---
+        // --- Supabase Config and Initialization (Database Only) ---
+        // FIX: Replaced placeholders with dummy valid URLs to prevent initialization error.
+        // NOTE: YOU MUST REPLACE THESE DUMMY VALUES WITH YOUR ACTUAL SUPABASE KEYS.
+        const SUPABASE_URL = 'https://vrbviuplpmpwpmomwkvx.supabase.co'; // *** REPLACE THIS WITH YOUR SUPABASE PROJECT URL ***
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyYnZpdXBscG1wd3Btb213a3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyODg3NzMsImV4cCI6MjA3Nzg2NDc3M30.WaHCepK7F4_6hTGfrdwgo75qbPqaN9f2xzlxS9etCks'; // *** REPLACE THIS WITH YOUR SUPABASE ANON KEY ***
+        const TABLE_NAME = 'admission_cards'; // Name of the table created by 1.sql
+        let supabase;
 
-        // Show admission status pop-up (replaces the old showAdmitStatus)
-        function showModal(title, message, type = 'success') {
+        function initializeSupabase() {
+            if (typeof window.createClient === 'function') {
+                try {
+                    // This is where the error occurred due to an invalid URL.
+                    supabase = window.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log("Supabase Client Initialized.");
+                } catch (e) {
+                    console.error("Supabase Initialization Error:", e.message);
+                    showModal('Setup Error', `Supabase failed to initialize. Check if SUPABASE_URL is correct.\nError: ${e.message}`, 'error');
+                }
+            } else {
+                console.error("Supabase SDK not loaded. Cannot connect to database.");
+            }
+        }
+
+        // Initialize Firebase and Anonymous Auth
+        async function initializeFirebaseAndAuth() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                
+                // Sign in anonymously to enable database access via Anon Key / RLS
+                await signInAnonymously(auth);
+                console.log("Scanner authenticated anonymously via Firebase.");
+            } catch (e) {
+                console.error("Firebase Auth or Initialization Error:", e);
+                showModal('System Error', `Failed to connect to Firebase Auth. Please contact support.`, 'error');
+            }
+        }
+        
+        // --- Utility Functions (Modal, Scanner logic remain the same) ---
+        function showModal(title, message, type = 'success') { 
             const modal = document.getElementById('status-modal');
             const content = document.getElementById('modal-content');
             const titleEl = document.getElementById('modal-title');
             const messageEl = document.getElementById('modal-message');
 
-            // Reset classes
             content.classList.remove('modal-success', 'modal-error', 'modal-warning');
-            content.classList.add('glass-card'); // Keep glass-card style
+            content.classList.add('glass-card'); 
 
-            // Set content and specific class
             titleEl.textContent = title;
             messageEl.textContent = message;
 
@@ -268,76 +336,71 @@
 
             modal.classList.remove('hidden');
         }
-
-        // Close the custom modal
-        function closeModal() {
+        
+        function closeModal() { 
             document.getElementById('status-modal').classList.add('hidden');
-            // Clear manual input
             document.getElementById('admit-index-input').value = '';
-            isProcessing = false; // Allow new processing
+            isProcessing = false; 
             
-            // Restart scanner when modal is closed (if not already running)
             if (html5QrCode) {
                 const currentState = html5QrCode.getState();
                 if (currentState === 0 || currentState === 2) {
-                    // Scanner is stopped, restart it
                     setTimeout(() => {
                         initScanner();
                     }, 300);
                 }
             } else {
-                // No scanner instance, initialize it
                 setTimeout(() => {
                     initScanner();
                 }, 300);
             }
         }
-
-        // Stop/Restart scanner and page (Fixed refresh button functionality)
+        
         function stopScanner() {
-            // Clear manual input
             document.getElementById('admit-index-input').value = '';
-            closeModal(); // Ensure modal is closed
-            isProcessing = false; // Reset processing flag
+            closeModal(); 
+            isProcessing = false;
 
-            // Stop the scanner properly
             if (html5QrCode) {
                 const currentState = html5QrCode.getState();
-                if (currentState !== 0 && currentState !== 2) { // Not stopped and not stopped permanently
+                if (currentState !== 0 && currentState !== 2) { 
                     html5QrCode.stop().then(() => {
-                        // Clear the reader div
                         document.getElementById('reader').innerHTML = '';
-                        // Restart scanner after a brief delay
                         setTimeout(() => {
                             initScanner();
                         }, 300);
                     }).catch(err => {
                         console.error("Could not stop scanner:", err);
-                        // Clear the reader div even if stop fails
                         document.getElementById('reader').innerHTML = '';
-                        // Try to restart anyway
                         setTimeout(() => {
                             initScanner();
                         }, 300);
                     });
                 } else {
-                    // Scanner is already stopped, just restart
                     document.getElementById('reader').innerHTML = '';
                     setTimeout(() => {
                         initScanner();
                     }, 300);
                 }
             } else {
-                // No scanner instance, initialize it
                 initScanner();
             }
         }
-
-        // Initialize QR Scanner
+        
         function initScanner() {
             const qrCodeRegionId = "reader";
             
-            // Stop the scanner if it's already running
+            const readerDiv = document.getElementById(qrCodeRegionId);
+            readerDiv.innerHTML = `
+                <div class="reader-loading p-4 text-center w-full">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2 text-sm font-semibold">Loading Camera...</p>
+                </div>
+            `;
+
             if (html5QrCode) {
                 const currentState = html5QrCode.getState();
                 if (currentState !== 0 && currentState !== 2) {
@@ -347,13 +410,8 @@
                 }
             }
             
-            // Clear previous content in reader div
-            document.getElementById(qrCodeRegionId).innerHTML = '';
-
-            // Create new scanner instance
             html5QrCode = new Html5Qrcode(qrCodeRegionId);
             
-            // Responsive QR box size based on screen width
             const isMobile = window.innerWidth < 640;
             const qrBoxSize = isMobile ? 200 : 250;
             const config = { 
@@ -363,143 +421,131 @@
             };
 
             html5QrCode.start(
-                { facingMode: "environment" }, // Use back camera
+                { facingMode: "environment" },
                 config,
                 (decodedText, decodedResult) => {
-                    // *** FIX 1: Call processAdmission directly. It will handle the 'isProcessing' flag. ***
-                    processAdmission(decodedText, true); // Pass 'true' to indicate it's from the scanner
+                    processAdmission(decodedText, true); 
                 },
                 (errorMessage) => {
-                    // Scanning errors are generally ignored to keep the flow smooth
+                    // Scanning errors are generally ignored
                 }
             )
-            // *** IMPROVED ERROR HANDLING BLOCK ***
             .catch((err) => {
                 console.error("Camera Initialization Error:", err);
-                const readerDiv = document.getElementById(qrCodeRegionId);
                 let title = "Camera Error";
-                let message = "Could not start the camera. Please ensure you are on a secure (HTTPS) connection and have granted permissions.";
+                let message = "Could not start the camera. Ensure you have granted permissions.";
 
                 const errMsg = err && err.message ? err.message : String(err);
 
                 if (window.location.protocol === 'file:') {
                     title = "File Access Error";
-                    message = "This scanner cannot run from a local file (`file:///`).\nPlease use a local server (like VS Code 'Live Server') or host it on a secure (HTTPS) website.";
+                    message = "This scanner cannot run from a local file (`file:///`).\nPlease use a local server or hosted environment.";
                 } else if (err && (err.name === 'NotAllowedError' || errMsg.includes('NotAllowedError') || errMsg.includes('Permission dismissed'))) {
                     title = "Permission Denied";
-                    message = "You have blocked camera access.\nPlease click the 🔒 icon in your browser's address bar and 'Allow' camera access, then restart.";
+                    message = "You have blocked camera access.\nPlease allow camera access and restart.";
                 } else if (err && (err.name === 'NotFoundError' || errMsg.includes('NotFoundError') || errMsg.includes('device not found'))) {
                     title = "No Camera Found";
-                    message = "No camera was detected. Please ensure your webcam is connected and enabled.";
+                    message = "No camera was detected. Ensure your device has an active camera.";
                 } else if (err && (err.name === 'NotReadableError' || errMsg.includes('NotReadableError') || errMsg.includes('in use'))) {
                     title = "Camera in Use";
-                    message = "Your camera is already being used by another application (like Zoom, Teams, or OBS).\nPlease close other applications and restart.";
+                    message = "Your camera is already being used by another application.\nPlease close other applications and restart.";
                 }
 
-                // Display the error message prominently in the reader box
-                // We use the 'status-error' class styles defined in the <style> tag
                 readerDiv.innerHTML = `
                     <div class="p-4 m-4 rounded-lg status-error text-center w-full">
                         <h4 class="font-bold text-lg mb-2">${title}</h4>
-                        <p class="text-sm">${message}</p>
+                        <p class="text-sm whitespace-pre-line">${message}</p>
                     </div>
                 `;
             });
         }
-
-        // Admission confirmation process by index number
+        
+        // --- Admission confirmation process (Supabase Read/Write) ---
         async function processAdmission(indexNumber, isFromScanner = false) {
             indexNumber = indexNumber.trim();
 
-            // *** FIX 2: Centralized 'isProcessing' check. ***
-            // This now handles both scanner (which calls repeatedly) and manual button.
             if (isProcessing) {
                 console.log("Already processing, scan ignored.");
                 return;
             }
-            isProcessing = true; // Set flag immediately
+            isProcessing = true; 
 
-            // *** FIX 3: Show modal FIRST. ***
             showModal('Processing...', `Please wait...\n\nChecking details for Index: ${indexNumber}`, 'info');
             
-            // *** FIX 4: Stop the scanner (if applicable) AFTER modal is visible. ***
             if (isFromScanner && html5QrCode) {
-                // Short delay to ensure modal renders before camera feed stops
                 setTimeout(() => {
                     const currentState = html5QrCode.getState();
-                    if (currentState !== 0 && currentState !== 2) { // Not stopped
+                    if (currentState !== 0 && currentState !== 2) { 
                         html5QrCode.stop().catch(err => console.error("Error stopping scanner:", err));
-                        console.log("Scanner stopped after modal.");
+                        console.log("Scanner stopped after scan.");
                     }
-                }, 100); // 100ms delay
+                }, 100); 
             }
 
-            // 1. Retrieving information
-            const { data: currentData, error: readError } = await supabaseClient
-                .from('admission_cards')
-                .select('id, full_name, is_admitted, expiry_date, admitted_at')
-                .eq('index_number', indexNumber)
-                .single();
-
-            if (readError || !currentData) {
-                showModal('Card Not Found', `✗ Index Number "${indexNumber}" not found in the system.\n\nPlease check the index number and try again.`, 'error');
-                isProcessing = false;
-                // Restart scanner after a delay to allow modal to show
-                setTimeout(() => {
-                    initScanner();
-                }, 500);
-                return;
+            // --- Database Logic (Supabase) ---
+            if (!supabase) {
+                 showModal('System Error', 'Supabase client is not initialized. Please check your URL/Key.', 'error');
+                 isProcessing = false;
+                 return;
             }
+            
+            try {
+                // 1. Query the card
+                const { data: cards, error: selectError } = await supabase
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .eq('index_number', indexNumber);
+                
+                if (selectError) throw selectError;
 
-            // Check if already admitted (Warning case)
-            if (currentData.is_admitted) {
-                const admittedTime = currentData.admitted_at ? new Date(currentData.admitted_at).toLocaleString() : 'Previously';
-                showModal('Already Admitted', `⚠ ${currentData.full_name} has already been admitted.\n\nAdmitted at: ${admittedTime}`, 'warning');
-                isProcessing = false;
-                // Restart scanner after a delay
-                setTimeout(() => {
-                    initScanner();
-                }, 500);
-                return;
-            }
+                let currentData = cards && cards.length > 0 ? cards[0] : null;
+                
+                if (!currentData) {
+                    showModal('Card Not Found', `✗ Index Number "${indexNumber}" not found in the system.`, 'error');
+                    return;
+                }
 
-            // Checking expiry date (Error case)
-            if (new Date(currentData.expiry_date) < new Date()) {
-                showModal('Card Expired', `✗ Card for ${currentData.full_name} has expired.\n\nExpiry Date: ${currentData.expiry_date}\n\nPlease contact administrator.`, 'error');
-                isProcessing = false;
-                // Restart scanner after a delay
-                setTimeout(() => {
-                    initScanner();
-                }, 500);
-                return;
-            }
+                // Check if already admitted
+                if (currentData.is_admitted) {
+                    // Supabase timestamp is ISO string
+                    const admittedTime = currentData.admitted_at ? new Date(currentData.admitted_at).toLocaleString() : 'Previously';
+                    showModal('Already Admitted', `⚠ ${currentData.full_name} has already been admitted.\n\nAdmitted at: ${admittedTime}`, 'warning');
+                    return;
+                }
 
-            // 2. Updating admission status
-            const { error: updateError } = await supabaseClient
-                .from('admission_cards')
-                .update({ is_admitted: true, admitted_at: new Date().toISOString() })
-                .eq('id', currentData.id);
+                // Checking expiry date
+                if (new Date(currentData.expiry_date) < new Date()) {
+                    showModal('Card Expired', `✗ Card for ${currentData.full_name} has expired.\n\nExpiry Date: ${currentData.expiry_date}\n\nPlease contact administrator.`, 'error');
+                    return;
+                }
 
-            if (updateError) {
-                showModal('Admission Failed', `Failed to record admission for ${currentData.full_name}.\nError: ${updateError.message}`, 'error');
-                isProcessing = false;
-                // Restart scanner after a delay
-                setTimeout(() => {
-                    initScanner();
-                }, 500);
-            } else {
+                // 2. Updating admission status
+                const { error: updateError } = await supabase
+                    .from(TABLE_NAME)
+                    .update({ 
+                        is_admitted: true, 
+                        admitted_at: new Date().toISOString() // Use ISO string for Supabase timestamp
+                    })
+                    .eq('index_number', indexNumber);
+                
+                if (updateError) throw updateError;
+
+
                 showModal('Admission Successful!', `✓ Admission recorded successfully!\n\nName: ${currentData.full_name}\nIndex: ${indexNumber}\nTime: ${new Date().toLocaleString()}`, 'success');
                 // isProcessing is cleared by closeModal()
-                // Scanner will restart when modal is closed
+            
+            } catch (error) {
+                console.error("Admission processing error:", error);
+                showModal('Admission Failed', `Failed to record admission for Index ${indexNumber}.\nError: ${error.message}`, 'error');
+                isProcessing = false;
             }
         }
         
         // Manual input button event
         document.getElementById('admit-check-btn').addEventListener('click', () => {
-            // *** FIX 5: Let processAdmission handle the 'isProcessing' flag. ***
             const indexNumber = document.getElementById('admit-index-input').value.trim();
             if (indexNumber) {
-                processAdmission(indexNumber, false); // Pass 'false' for manual entry
+                processAdmission(indexNumber, false);
             } else {
                 showModal('Input Required', 'Please enter an Index Number.', 'error');
             }
@@ -512,11 +558,14 @@
             }
         });
 
-        // Initial Load
-        window.onload = function() {
-            initScanner();
+        // Initial Load: Start the scanner
+        window.onload = async function() {
+            initializeSupabase(); // Initialize Supabase client
+            await initializeFirebaseAndAuth(); // Authenticate anonymously
+            initScanner(); // Start the QR scanner
         };
+        
     </script>
 
 </body>
-</html>
+</html>ෆ්
